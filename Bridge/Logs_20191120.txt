@@ -1,0 +1,127 @@
+2019/11/20 11:16:23 : Connected
+2019/11/20 11:16:24 : Started GOLD
+2019/11/20 11:16:24 : Started GOLD
+2019/11/20 11:16:24 : Started GOLD
+2019/11/20 11:16:25 : Started GOLD
+2019/11/20 11:16:28 : Connected
+2019/11/20 11:16:29 : Started GOLD
+2019/11/20 11:16:29 : Started GOLD
+2019/11/20 11:16:30 : Started GOLD
+2019/11/20 11:16:30 : Started GOLD
+2019/11/20 11:16:30 : Started GOLD
+2019/11/20 11:16:33 : Connected
+2019/11/20 11:16:34 : Started GOLD
+2019/11/20 11:16:35 : Started GOLD
+2019/11/20 11:16:35 : Started GOLD
+2019/11/20 11:16:35 : Stopped GOLD
+2019/11/20 11:16:35 : Stopped GOLD
+2019/11/20 11:16:35 : Stopped GOLD
+2019/11/20 11:16:35 : Stopped GOLD
+2019/11/20 11:16:37 : Started GOLD
+2019/11/20 12:52:42 : Connected
+2019/11/20 13:19:27 : Connected
+2019/11/20 14:14:06 : Connected
+2019/11/20 14:27:53 : Connected
+2019/11/20 15:57:13 : Connected
+2019/11/20 16:00:13 : Connected
+2019/11/20 16:02:38 : Connected
+2019/11/20 16:07:09 : Connected
+2019/11/20 16:10:01 : Connected
+2019/11/20 16:10:58 : Connected
+2019/11/20 16:11:12 : Started GOLD
+2019/11/20 16:11:13 : Started GOLD
+2019/11/20 16:11:14 : Started GOLD
+2019/11/20 16:11:14 : Started GOLD
+2019/11/20 16:11:15 : Started GOLD
+2019/11/20 16:11:16 : Started GOLD
+2019/11/20 16:11:16 : Started GOLD
+2019/11/20 16:11:17 : Stopped GOLD
+2019/11/20 16:11:18 : Stopped GOLD
+2019/11/20 16:11:19 : Stopped GOLD
+2019/11/20 16:11:20 : Stopped GOLD
+2019/11/20 16:11:21 : Stopped GOLD
+2019/11/20 16:11:22 : Stopped GOLD
+2019/11/20 16:11:22 : Started GOLD
+2019/11/20 16:11:23 : Started GOLD
+2019/11/20 16:11:25 : Stopped GOLD
+2019/11/20 16:11:26 : Started GOLD
+2019/11/20 16:11:27 : Started GOLD
+2019/11/20 16:11:28 : Started GOLD
+2019/11/20 16:11:29 : Started GOLD
+2019/11/20 16:11:29 : Started GOLD
+2019/11/20 16:11:31 : Stopped GOLD
+2019/11/20 16:11:31 : Stopped GOLD
+2019/11/20 16:11:32 : Stopped GOLD
+2019/11/20 16:11:33 : Stopped GOLD
+2019/11/20 16:11:36 : Stopped GOLD
+2019/11/20 16:11:38 : Stopped GOLD
+2019/11/20 16:11:50 : Started GOLD
+2019/11/20 16:11:50 : Started GOLD
+2019/11/20 16:11:54 : Stopped GOLD
+2019/11/20 16:11:55 : Stopped GOLD
+2019/11/20 16:11:57 : Started GOLD
+2019/11/20 16:11:58 : Started GOLD
+2019/11/20 16:12:01 : Stopped GOLD
+2019/11/20 16:12:02 : Stopped GOLD
+2019/11/20 16:12:10 : Started GOLD
+2019/11/20 16:12:11 : Started GOLD
+2019/11/20 16:12:12 : Started GOLD
+2019/11/20 16:12:12 : Started GOLD
+2019/11/20 16:12:15 : Stopped GOLD
+2019/11/20 16:12:15 : Stopped GOLD
+2019/11/20 16:12:19 : Started GOLD
+2019/11/20 16:12:24 : Stopped GOLD
+2019/11/20 16:12:27 : Stopped GOLD
+2019/11/20 16:12:31 : Started GOLD
+2019/11/20 16:12:35 : Started GOLD
+2019/11/20 16:12:37 : Stopped GOLD
+2019/11/20 16:12:39 : Stopped GOLD
+2019/11/20 16:12:40 : Started GOLD
+2019/11/20 16:15:11 : Connected
+2019/11/20 16:15:28 : Started GOLD
+2019/11/20 16:15:30 : Stopped GOLD
+2019/11/20 16:20:15 : Connected
+2019/11/20 16:20:31 : Started GOLD
+2019/11/20 16:20:32 : Started GOLD
+2019/11/20 16:43:32 : Connected
+2019/11/20 16:52:16 : Connected
+2019/11/20 16:53:37 : Connected
+2019/11/20 17:26:34 : Connected
+2019/11/20 17:46:58 : Connected
+2019/11/20 17:58:22 : Connected
+2019/11/20 17:59:20 : Connected
+2019/11/20 18:04:40 : Connected
+2019/11/20 18:06:16 : Connected
+2019/11/20 18:06:50 : Connected
+2019/11/20 18:06:54 : Started IB
+2019/11/20 18:06:56 : Started I
+2019/11/20 18:06:59 : Stopped IB
+2019/11/20 18:06:59 : Stopped I
+2019/11/20 18:07:29 : Connected
+2019/11/20 18:34:40 : Connected
+2019/11/20 18:37:22 : Connected
+2019/11/20 18:38:21 : Connected
+2019/11/20 18:38:39 : Connected
+2019/11/20 18:39:31 : Connected
+2019/11/20 18:39:38 : Connected
+2019/11/20 18:39:52 : Started I11
+2019/11/20 18:42:17 : Connected
+2019/11/20 18:42:18 : Started IB1
+2019/11/20 18:43:03 : Connected
+2019/11/20 18:43:05 : Started IB1
+2019/11/20 18:44:58 : Connected
+2019/11/20 18:45:00 : Started IB1
+2019/11/20 18:45:22 : Stopped IB1
+2019/11/20 18:45:27 : Started I11
+2019/11/20 18:49:29 : Connected
+2019/11/20 18:49:30 : Started IB1
+2019/11/20 18:49:34 : Changed Settings of IB1
+2019/11/20 18:49:41 : Changed Settings of U1
+2019/11/20 18:49:47 : Changed Settings of U1
+2019/11/20 18:50:13 : Changed Settings of U1
+2019/11/20 18:50:29 : Changed Settings of U1
+2019/11/20 18:57:09 : Connected
+2019/11/20 18:57:22 : DELETED Setting of U1
+2019/11/20 18:58:06 : Connected
+2019/11/20 18:59:02 : Connected
+2019/11/20 19:00:52 : Edited Settings of I3
