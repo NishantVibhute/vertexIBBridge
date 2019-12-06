@@ -13,8 +13,12 @@ import com.bridge.renderer.StatusButtonRenderer;
 import com.bridge.renderer.StoptButtonRenderer;
 import com.bridge.renderer.TableHeaderRenderer;
 import com.bridge.utilities.CommonUtil;
+import com.bridge.utilities.IBApi;
+import static com.bridge.utilities.IBApi.start;
+import com.bridge.utilities.IConnectionConfiguration;
 import com.bridge.utilities.StartCalculation;
 import com.bridge.utilities.StopCalculation;
+import com.bridge.utilities.TableRow;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -32,6 +36,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -57,6 +62,8 @@ public class FrmMain extends javax.swing.JFrame {
     StartCalculation startCalculation = new StartCalculation();
     StopCalculation stopCalculation = new StopCalculation();
     public static List<Settings> settingsList = new ArrayList<>();
+    IBApi iBApi;
+    public static boolean isIBConnected = false;
 
     /**
      * Creates new form FrmMain
@@ -75,6 +82,9 @@ public class FrmMain extends javax.swing.JFrame {
 
         setVisible(true);
         setLocation(x, y);
+
+        lblIBStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/refresh.png")));
+
         try {
             txtMessages.setText(CommonUtil.readFile());
         } catch (IOException ex) {
@@ -163,7 +173,17 @@ public class FrmMain extends javax.swing.JFrame {
                     tbSignal.clearSelection();
                     if (selectedRow >= 0) {
                         if (selectedCol == 10) {
-                            startCalculation.StartC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
+                            if (isIBConnected) {
+                                startCalculation.StartC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
+                                settingsList.get(selectedRow).getTableRow().startContractData();
+                            } else {
+                                String text = JOptionPane.showInputDialog("Interactive Broker is Not Connected \nEnter Port to connect", "7496");
+
+                                if (text != null) {
+                                    int port = Integer.parseInt(text);
+                                    connectIB(port);
+                                }
+                            }
                         }
 
                         if (selectedCol == 11) {
@@ -184,8 +204,8 @@ public class FrmMain extends javax.swing.JFrame {
             settingsList = CommonUtil.getSettings();
 
             for (Settings set : settingsList) {
-                Object[] row1 = {set.getColor(), set.getIBSymbol(), "", "", "", "", "", "", set.getBuySpread(), set.getSellSpread(), new JPanel(), new JPanel(), new JPanel()};
-                model.addRow(row1);
+
+                model.addRow(set.getTableRow().getRow());
             }
         }
         this.addWindowListener(new WindowAdapter() {
@@ -200,6 +220,11 @@ public class FrmMain extends javax.swing.JFrame {
 
     }
 
+    public void connectIB(int port) {
+        iBApi = new IBApi(new IConnectionConfiguration.DefaultConnectionConfiguration(), port);
+        iBApi.start(iBApi);
+    }
+
     public static void setSettings() {
         int rows = model.getRowCount();
         for (int i = rows - 1; i >= 0; i--) {
@@ -207,8 +232,7 @@ public class FrmMain extends javax.swing.JFrame {
         }
 
         for (Settings set : settingsList) {
-            Object[] row1 = {set.getColor(), set.getIBSymbol(), "", "", "", "", "", "", set.getBuySpread(), set.getSellSpread(), new JPanel(), new JPanel(), new JPanel()};
-            model.addRow(row1);
+            model.addRow(set.getTableRow().getRow());
         }
 
     }
@@ -237,10 +261,13 @@ public class FrmMain extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
+        panHead = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        lblIBStatus = new javax.swing.JLabel();
         butAddNew = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
         panSignals = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -256,14 +283,18 @@ public class FrmMain extends javax.swing.JFrame {
 
         jPanel1.setBackground(new java.awt.Color(0, 0, 0));
 
-        jPanel2.setBackground(new java.awt.Color(0, 0, 0));
+        panHead.setBackground(new java.awt.Color(0, 0, 0));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("Connected");
+        jLabel1.setText("Interactive Broker");
 
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/greenflash.gif"))); // NOI18N
-        jLabel3.setText("jLabel3");
+        lblIBStatus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/refresh.png"))); // NOI18N
+        lblIBStatus.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblIBStatusMouseClicked(evt);
+            }
+        });
 
         butAddNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/addNew.png"))); // NOI18N
         butAddNew.setToolTipText("Add New Setting");
@@ -274,31 +305,56 @@ public class FrmMain extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(19, 19, 19)
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setText("Connect IB");
+        jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel2MouseClicked(evt);
+            }
+        });
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel5.setText("Vertex");
+
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif"))); // NOI18N
+        jLabel6.setText("jLabel3");
+
+        javax.swing.GroupLayout panHeadLayout = new javax.swing.GroupLayout(panHead);
+        panHead.setLayout(panHeadLayout);
+        panHeadLayout.setHorizontalGroup(
+            panHeadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panHeadLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblIBStatus)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(62, 62, 62)
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel2)
+                .addGap(132, 132, 132)
                 .addComponent(butAddNew, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(10, 10, 10))
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        panHeadLayout.setVerticalGroup(
+            panHeadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panHeadLayout.createSequentialGroup()
                 .addGap(5, 5, 5)
                 .addComponent(butAddNew, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(5, 5, 5))
+            .addGroup(panHeadLayout.createSequentialGroup()
+                .addGap(7, 7, 7)
+                .addGroup(panHeadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblIBStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(7, 7, 7))
         );
 
         panSignals.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 179, 66), 2));
@@ -329,7 +385,7 @@ public class FrmMain extends javax.swing.JFrame {
         );
         panOrdersLayout.setVerticalGroup(
             panOrdersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Messages", panOrders);
@@ -356,7 +412,7 @@ public class FrmMain extends javax.swing.JFrame {
         );
         panMessageLayout.setVerticalGroup(
             panMessageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Orders", panMessage);
@@ -376,16 +432,16 @@ public class FrmMain extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(panSignals, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panHead, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panSignals, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panHead, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(panSignals, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                .addComponent(panSignals, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -395,8 +451,8 @@ public class FrmMain extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -412,16 +468,35 @@ public class FrmMain extends javax.swing.JFrame {
         f.setPosition(-1);
     }//GEN-LAST:event_butAddNewMouseClicked
 
+    private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
+        // TODO add your handling code here:
+
+//        iBApi.getData();
+    }//GEN-LAST:event_jLabel2MouseClicked
+
+    private void lblIBStatusMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblIBStatusMouseClicked
+        // TODO add your handling code here:
+        String text = JOptionPane.showInputDialog(this, "Enter Port", "7496");
+
+        if (text != null) {
+            int port = Integer.parseInt(text);
+            connectIB(port);
+        }
+    }//GEN-LAST:event_lblIBStatusMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel butAddNew;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    public static javax.swing.JLabel lblIBStatus;
+    public static javax.swing.JPanel panHead;
     private javax.swing.JPanel panMessage;
     private javax.swing.JPanel panOrders;
     private javax.swing.JPanel panSignals;

@@ -5,6 +5,8 @@
  */
 package com.bridge.beans;
 
+import com.bridge.utilities.TableRow;
+
 /**
  *
  * @author nishant.vibhute
@@ -29,6 +31,7 @@ public class Settings {
     private int expiryMonth;
     private int expiryYear;
     private int status = 0;
+    private TableRow tableRow;
 
     public int getId() {
         return id;
@@ -156,6 +159,22 @@ public class Settings {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public TableRow getTableRow() {
+        return tableRow;
+    }
+
+    public void setTableRow(TableRow tableRow) {
+        this.tableRow = tableRow;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 
 }

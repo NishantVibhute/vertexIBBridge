@@ -349,7 +349,7 @@ public class DigSettings extends javax.swing.JDialog {
         cmbMonth.setBackground(new java.awt.Color(0, 0, 0));
         cmbMonth.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
         cmbMonth.setForeground(new java.awt.Color(255, 255, 255));
-        cmbMonth.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Month", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" }));
+        cmbMonth.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Month", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" }));
 
         cmbYear.setBackground(new java.awt.Color(0, 0, 0));
         cmbYear.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N

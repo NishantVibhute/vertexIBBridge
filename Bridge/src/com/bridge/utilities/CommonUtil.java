@@ -121,7 +121,7 @@ public class CommonUtil {
                     .withSkipLines(1)
                     .build();
             List<String[]> allData = csvReader.readAll();
-
+            int i = 0;
             // print Data
             for (String[] row : allData) {
                 Settings settings = new Settings();
@@ -140,7 +140,9 @@ public class CommonUtil {
                 settings.setSetorType(row[11]);
                 settings.setExchange(row[12]);
                 settings.setPrimaryExchange(row[13]);
+                settings.setTableRow(new TableRow(settings, i));
                 settingsList.add(settings);
+                i++;
 
             }
         } catch (Exception e) {
