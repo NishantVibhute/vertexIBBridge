@@ -14,22 +14,24 @@ import com.bridge.renderer.StoptButtonRenderer;
 import com.bridge.renderer.TableHeaderRenderer;
 import com.bridge.utilities.CommonUtil;
 import com.bridge.utilities.IBApi;
-import static com.bridge.utilities.IBApi.start;
 import com.bridge.utilities.IConnectionConfiguration;
+import com.bridge.utilities.OrdersModel;
 import com.bridge.utilities.StartCalculation;
 import com.bridge.utilities.StopCalculation;
-import com.bridge.utilities.TableRow;
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,10 +41,8 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -50,6 +50,13 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.winium.DesktopOptions;
+import org.openqa.selenium.winium.WiniumDriver;
+import org.openqa.selenium.winium.WiniumDriverService;
 
 /**
  *
@@ -64,165 +71,177 @@ public class FrmMain extends javax.swing.JFrame {
     public static List<Settings> settingsList = new ArrayList<>();
     IBApi iBApi;
     public static boolean isIBConnected = false;
+    public static WebDriver driver = null;
+
+    public static WebElement tradeTable, marketWatchTable;
+    public static WebElement tradeElem, marketWatchElem;
+    public static Robot robot;
+    public static Actions actions;
 
     /**
      * Creates new form FrmMain
      */
     public FrmMain() {
-        initComponents();
-        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = (int) ((dimension.getWidth() - getWidth()) / 2);
-        int y = (int) ((dimension.getHeight() - getHeight()) / 2);
-
-        java.net.URL url = ClassLoader.getSystemResource("com/bridge/images/logo.png");
-
-        Toolkit kit = Toolkit.getDefaultToolkit();
-        Image img = kit.createImage(url);
-        setIconImage(img);
-
-        setVisible(true);
-        setLocation(x, y);
-
-        lblIBStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/refresh.png")));
-
         try {
-            txtMessages.setText(CommonUtil.readFile());
-        } catch (IOException ex) {
-            Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        CommonUtil.setMessage("Connected");
-
-        model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                //all cells false
-                return false;
+            initComponents();
+            String notepadApplicationPath = "C:\\Users\\Supriya\\AppData\\Local\\Programs\\Seven Ocean Trade\\VertexFX Trader.exe";
+            String winiumDriverPath = "H:\\Winium\\Winium.Desktop.Driver\\Winium.Desktop.Driver.exe";// To stop winium desktop driver
+            //    		before start another session
+            Process process = Runtime.getRuntime().exec("taskkill /F /IM Winium.Desktop.Driver.exe");
+            process.waitFor();
+            process.destroy();
+            DesktopOptions options = new DesktopOptions(); // Initiate Winium Desktop Options
+            options.setApplicationPath(notepadApplicationPath); // Set notepad application path
+            WiniumDriverService service = new WiniumDriverService.Builder().usingDriverExecutable(new File(winiumDriverPath)).usingPort(9999).withVerbose(true).withLogFile(new File("G:\\winiLog.txt")).withSilent(false).buildDesktopService();
+            service.start(); // Build and Start a Winium Driver service
+            Thread.sleep(5000);
+            driver = new WiniumDriver(service, options); // Start a winium driver
+            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+            int x = (int) ((dimension.getWidth() - getWidth()) / 2);
+            int y = (int) ((dimension.getHeight() - getHeight()) / 2);
+            java.net.URL url = ClassLoader.getSystemResource("com/bridge/images/logo.png");
+            Toolkit kit = Toolkit.getDefaultToolkit();
+            Image img = kit.createImage(url);
+            setIconImage(img);
+            setVisible(true);
+            setLocation(x, y);
+            lblIBStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/refresh.png")));
+            try {
+                txtMessages.setText(CommonUtil.readFile());
+            } catch (IOException ex) {
+                Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
             }
-        };
-        model.setDataVector(new Object[][]{},
-                new Object[]{"Status", "Symbol", "Buy Spread", "Sell Spread", "IB_Bid", "IB_Ask", "Vertex_Bid", "Vertex_Ask", "Buy Para", "Sell Para", "Start", "Stop", "Settings"});
-        tbSignal = new JTable(model) {
-            protected JTableHeader createDefaultTableHeader() {
-                return new GroupableTableHeader(columnModel);
-            }
-        };
-        tbSignal.setFont(new java.awt.Font("Times New Roman", 0, 14));
-        TableColumnModel cm = tbSignal.getColumnModel();
-        GroupableTableHeader header1 = (GroupableTableHeader) tbSignal.getTableHeader();
-        JScrollPane scroll = new JScrollPane(tbSignal);
-        Color heading = new Color(57, 74, 108);
-        Color ivory = new Color(0, 0, 0);
-        JTableHeader header = tbSignal.getTableHeader();
-        header.setDefaultRenderer(new TableHeaderRenderer(tbSignal));
-        header.setOpaque(false);
-        header.setPreferredSize(new Dimension(100, 35));
-        header.setBackground(heading);
-        header1.setBackground(heading);
-        tbSignal.setBorder(BorderFactory.createLineBorder(new Color(57, 74, 108), 1));
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        StatusButtonRenderer statusButtonRenderer = new StatusButtonRenderer();
-
-        tbSignal.getColumnModel().getColumn(0).setCellRenderer(statusButtonRenderer);
-        tbSignal.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-        tbSignal.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
-        tbSignal.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
-        tbSignal.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
-        tbSignal.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
-        tbSignal.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
-        tbSignal.getColumnModel().getColumn(7).setCellRenderer(centerRenderer);
-        tbSignal.getColumnModel().getColumn(8).setCellRenderer(centerRenderer);
-        tbSignal.getColumnModel().getColumn(9).setCellRenderer(centerRenderer);
-        StartButtonRenderer startButtonRenderer = new StartButtonRenderer();
-        tbSignal.getColumnModel().getColumn(10).setCellRenderer(startButtonRenderer);
-        StoptButtonRenderer stoptButtonRenderer = new StoptButtonRenderer();
-        tbSignal.getColumnModel().getColumn(11).setCellRenderer(stoptButtonRenderer);
-        SettingtButtonRenderer settingtButtonRenderer = new SettingtButtonRenderer();
-        tbSignal.getColumnModel().getColumn(12).setCellRenderer(settingtButtonRenderer);
-
-        tbSignal.setRowHeight(35);
-
-        tbSignal.setOpaque(true);
-        tbSignal.setFillsViewportHeight(true);
-        tbSignal.setBackground(ivory);
-        tbSignal.setForeground(new Color(255, 255, 255));
-        tbSignal.setSelectionBackground(Color.WHITE);
-        tbSignal.setSelectionForeground(Color.BLACK);
-        resizeColumns();
-        panSignals.add(scroll, BorderLayout.CENTER);
-
-        MouseMotionAdapter mma;
-        mma = new MouseMotionAdapter() {
-            public void mouseMoved(MouseEvent e) {
-                Point p = e.getPoint();
-                if (tbSignal.columnAtPoint(p) == 10 || tbSignal.columnAtPoint(p) == 11 || tbSignal.columnAtPoint(p) == 12) {
-                    tbSignal.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                } else {
-                    tbSignal.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            CommonUtil.setMessage("Connected");
+            model = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    //all cells false
+                    return false;
                 }
-            }
-        };
-        tbSignal.addMouseMotionListener(mma);
+            };
+            model.setDataVector(new Object[][]{},
+                    new Object[]{"Status", "Symbol", "Buy Spread", "Sell Spread", "IB_Bid", "IB_Ask", "Vertex_Bid", "Vertex_Ask", "Buy Para", "Sell Para", "Start", "Stop", "Settings"});
+            tbSignal = new JTable(model) {
+                protected JTableHeader createDefaultTableHeader() {
+                    return new GroupableTableHeader(columnModel);
+                }
+            };
+            tbSignal.setFont(new java.awt.Font("Times New Roman", 0, 14));
+            TableColumnModel cm = tbSignal.getColumnModel();
+            GroupableTableHeader header1 = (GroupableTableHeader) tbSignal.getTableHeader();
+            JScrollPane scroll = new JScrollPane(tbSignal);
+            Color heading = new Color(57, 74, 108);
+            Color ivory = new Color(0, 0, 0);
+            JTableHeader header = tbSignal.getTableHeader();
+            header.setDefaultRenderer(new TableHeaderRenderer(tbSignal));
+            header.setOpaque(false);
+            header.setPreferredSize(new Dimension(100, 35));
+            header.setBackground(heading);
+            header1.setBackground(heading);
+            tbSignal.setBorder(BorderFactory.createLineBorder(new Color(57, 74, 108), 1));
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            StatusButtonRenderer statusButtonRenderer = new StatusButtonRenderer();
+            tbSignal.getColumnModel().getColumn(0).setCellRenderer(statusButtonRenderer);
+            tbSignal.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+            tbSignal.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+            tbSignal.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+            tbSignal.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
+            tbSignal.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
+            tbSignal.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
+            tbSignal.getColumnModel().getColumn(7).setCellRenderer(centerRenderer);
+            tbSignal.getColumnModel().getColumn(8).setCellRenderer(centerRenderer);
+            tbSignal.getColumnModel().getColumn(9).setCellRenderer(centerRenderer);
+            StartButtonRenderer startButtonRenderer = new StartButtonRenderer();
+            tbSignal.getColumnModel().getColumn(10).setCellRenderer(startButtonRenderer);
+            StoptButtonRenderer stoptButtonRenderer = new StoptButtonRenderer();
+            tbSignal.getColumnModel().getColumn(11).setCellRenderer(stoptButtonRenderer);
+            SettingtButtonRenderer settingtButtonRenderer = new SettingtButtonRenderer();
+            tbSignal.getColumnModel().getColumn(12).setCellRenderer(settingtButtonRenderer);
+            tbSignal.setRowHeight(35);
+            tbSignal.setOpaque(true);
+            tbSignal.setFillsViewportHeight(true);
+            tbSignal.setBackground(ivory);
+            tbSignal.setForeground(new Color(255, 255, 255));
+            tbSignal.setSelectionBackground(Color.WHITE);
+            tbSignal.setSelectionForeground(Color.BLACK);
+            resizeColumns();
+            panSignals.add(scroll, BorderLayout.CENTER);
+            MouseMotionAdapter mma;
+            mma = new MouseMotionAdapter() {
+                public void mouseMoved(MouseEvent e) {
+                    Point p = e.getPoint();
+                    if (tbSignal.columnAtPoint(p) == 10 || tbSignal.columnAtPoint(p) == 11 || tbSignal.columnAtPoint(p) == 12) {
+                        tbSignal.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    } else {
+                        tbSignal.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    }
+                }
+            };
+            tbSignal.addMouseMotionListener(mma);
+            tbSignal.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    if (!e.getValueIsAdjusting()) {
+                        int selectedRow = tbSignal.getSelectedRow();
+                        int selectedCol = tbSignal.getSelectedColumn();
+                        tbSignal.clearSelection();
+                        if (selectedRow >= 0) {
+                            if (selectedCol == 10) {
+                                if (isIBConnected) {
+                                    startCalculation.StartC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
+                                    settingsList.get(selectedRow).getTableRow().startContractData();
+                                } else {
+                                    String text = JOptionPane.showInputDialog("Interactive Broker is Not Connected \nEnter Port to connect", "7496");
 
-        tbSignal.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    int selectedRow = tbSignal.getSelectedRow();
-                    int selectedCol = tbSignal.getSelectedColumn();
-                    tbSignal.clearSelection();
-                    if (selectedRow >= 0) {
-                        if (selectedCol == 10) {
-                            if (isIBConnected) {
-                                startCalculation.StartC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
-                                settingsList.get(selectedRow).getTableRow().startContractData();
-                            } else {
-                                String text = JOptionPane.showInputDialog("Interactive Broker is Not Connected \nEnter Port to connect", "7496");
-
-                                if (text != null) {
-                                    int port = Integer.parseInt(text);
-                                    connectIB(port);
+                                    if (text != null) {
+                                        int port = Integer.parseInt(text);
+                                        connectIB(port);
+                                    }
                                 }
                             }
-                        }
 
-                        if (selectedCol == 11) {
-                            stopCalculation.StopC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
-                        }
-                        if (selectedCol == 12) {
-                            DigSettings f = new DigSettings(new javax.swing.JFrame(), true);
-                            f.setPosition(selectedRow);
-                        }
+                            if (selectedCol == 11) {
+                                stopCalculation.StopC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
+                            }
+                            if (selectedCol == 12) {
+                                DigSettings f = new DigSettings(new javax.swing.JFrame(), true);
+                                f.setPosition(selectedRow);
+                            }
 
+                        }
                     }
                 }
             }
-        }
-        );
-        int status = CommonUtil.checkSettingsExist();
-        if (status != 0) {
-            settingsList = CommonUtil.getSettings();
+            );
+            int status = CommonUtil.checkSettingsExist();
+            if (status != 0) {
+                settingsList = CommonUtil.getSettings();
 
-            for (Settings set : settingsList) {
+                for (Settings set : settingsList) {
 
-                model.addRow(set.getTableRow().getRow());
-            }
-        }
-        this.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                try {
-                    CommonUtil.writeFile(txtMessages);
-                } catch (IOException ex) {
-                    Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
+                    model.addRow(set.getTableRow().getRow());
                 }
             }
-        });
+            this.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    try {
+                        CommonUtil.writeFile(txtMessages);
+                    } catch (IOException ex) {
+                        Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            });
+        } catch (Exception ex) {
+            Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 
     public void connectIB(int port) {
         iBApi = new IBApi(new IConnectionConfiguration.DefaultConnectionConfiguration(), port);
         iBApi.start(iBApi);
+
     }
 
     public static void setSettings() {
@@ -267,7 +286,7 @@ public class FrmMain extends javax.swing.JFrame {
         butAddNew = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
+        lblVertexStatus = new javax.swing.JLabel();
         panSignals = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -318,8 +337,13 @@ public class FrmMain extends javax.swing.JFrame {
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setText("Vertex");
 
-        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif"))); // NOI18N
-        jLabel6.setText("jLabel3");
+        lblVertexStatus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/refresh.png"))); // NOI18N
+        lblVertexStatus.setText("jLabel3");
+        lblVertexStatus.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblVertexStatusMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout panHeadLayout = new javax.swing.GroupLayout(panHead);
         panHead.setLayout(panHeadLayout);
@@ -331,7 +355,7 @@ public class FrmMain extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(62, 62, 62)
-                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(lblVertexStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -350,7 +374,7 @@ public class FrmMain extends javax.swing.JFrame {
                 .addGap(7, 7, 7)
                 .addGroup(panHeadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblVertexStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(lblIBStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -481,21 +505,47 @@ public class FrmMain extends javax.swing.JFrame {
         if (text != null) {
             int port = Integer.parseInt(text);
             connectIB(port);
+            OrdersModel m_model = new OrdersModel();
+            IBApi.INSTANCE.controller().reqLiveOrders(m_model);
         }
     }//GEN-LAST:event_lblIBStatusMouseClicked
+
+    private void lblVertexStatusMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblVertexStatusMouseClicked
+        // TODO add your handling code here:
+        DigMessage f = new DigMessage(new javax.swing.JFrame(), true);
+        tradeTable = FrmMain.driver.findElement(By.name("Trade"));
+        tradeElem = tradeTable.findElement(By.className("SysListView32"));
+
+        marketWatchTable = FrmMain.driver.findElement(By.name("Market Watch"));
+        marketWatchElem = marketWatchTable.findElement(By.className("SysListView32"));
+        actions = new Actions(driver);
+
+        try {
+            robot = new Robot();
+        } catch (AWTException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        lblVertexStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif")));
+        lblVertexStatus.revalidate();
+        lblVertexStatus.repaint();
+        f.dispose();
+
+    }//GEN-LAST:event_lblVertexStatusMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel butAddNew;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     public static javax.swing.JLabel lblIBStatus;
+    private javax.swing.JLabel lblVertexStatus;
     public static javax.swing.JPanel panHead;
     private javax.swing.JPanel panMessage;
     private javax.swing.JPanel panOrders;

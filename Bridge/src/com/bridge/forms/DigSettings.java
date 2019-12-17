@@ -7,9 +7,9 @@ package com.bridge.forms;
 
 import com.bridge.beans.Settings;
 import com.bridge.utilities.CommonUtil;
+import com.bridge.utilities.TableRow;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.TrayIcon;
 import java.util.ArrayList;
 import java.util.Calendar;
 import javax.swing.JOptionPane;
@@ -25,6 +25,7 @@ public class DigSettings extends javax.swing.JDialog {
      */
     int position;
     Settings set;
+    TableRow tableRow;
 
     public DigSettings(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -72,6 +73,7 @@ public class DigSettings extends javax.swing.JDialog {
             txtVertexMaxOrder.setText("" + set.getVertexMaxOrder());
             txtVertexQty.setText("" + set.getVertexQty());
             txtVertexSymbol.setText("" + set.getVertexSymbol());
+            tableRow = set.getTableRow();
 
         }
     }
@@ -492,8 +494,8 @@ public class DigSettings extends javax.swing.JDialog {
     private void butSaveMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_butSaveMouseClicked
         // TODO add your handling code here:
 
-        int month = Integer.parseInt("" + cmbMonth.getSelectedItem());
-        int year = Integer.parseInt("" + cmbYear.getSelectedItem());
+        String month = "" + cmbMonth.getSelectedItem();
+        String year = "" + cmbYear.getSelectedItem();
 
         Settings settings = new Settings();
         settings.setColor(position == -1 ? "Red" : set.getColor());
@@ -513,8 +515,10 @@ public class DigSettings extends javax.swing.JDialog {
         settings.setPrimaryExchange(primaryExchange.getText());
 
         if (position == -1) {
+            settings.setTableRow(new TableRow(settings, FrmMain.settingsList.size() + 1));
             FrmMain.settingsList.add(settings);
         } else {
+            settings.setTableRow(new TableRow(settings, position));
             FrmMain.settingsList.remove(position);
             FrmMain.settingsList.add(position, settings);
         }

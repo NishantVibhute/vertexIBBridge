@@ -28,8 +28,8 @@ public class Settings {
     private int VertexMaxOrder;
     private int VertexQty;
     private String VertexSymbol;
-    private int expiryMonth;
-    private int expiryYear;
+    private String expiryMonth;
+    private String expiryYear;
     private int status = 0;
     private TableRow tableRow;
 
@@ -137,22 +137,6 @@ public class Settings {
         this.VertexSymbol = VertexSymbol;
     }
 
-    public int getExpiryMonth() {
-        return expiryMonth;
-    }
-
-    public void setExpiryMonth(int expiryMonth) {
-        this.expiryMonth = expiryMonth;
-    }
-
-    public int getExpiryYear() {
-        return expiryYear;
-    }
-
-    public void setExpiryYear(int expiryYear) {
-        this.expiryYear = expiryYear;
-    }
-
     public String getColor() {
         return color;
     }
@@ -175,6 +159,22 @@ public class Settings {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public String getExpiryMonth() {
+        return expiryMonth;
+    }
+
+    public void setExpiryMonth(String expiryMonth) {
+        this.expiryMonth = expiryMonth;
+    }
+
+    public String getExpiryYear() {
+        return expiryYear;
+    }
+
+    public void setExpiryYear(String expiryYear) {
+        this.expiryYear = expiryYear;
     }
 
 }

@@ -8,8 +8,6 @@ package com.bridge.forms;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -231,9 +229,14 @@ public class FrmLogin extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLabel3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MouseClicked
-        // TODO add your handling code here:
-        this.dispose();
-        new FrmMain();
+        try {
+            // TODO add your handling code here:
+            this.dispose();
+
+            new FrmMain();
+        } catch (Exception ex) {
+            Logger.getLogger(FrmLogin.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jLabel3MouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -7,7 +7,6 @@ package com.bridge.utilities;
 
 import com.bridge.beans.Settings;
 import com.bridge.forms.FrmMain;
-
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
@@ -21,7 +20,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 /**
@@ -132,8 +130,8 @@ public class CommonUtil {
                 settings.setVertexSymbol(row[3]);
                 settings.setVertexQty(Integer.parseInt(row[4]));
                 settings.setVertexMaxOrder(Integer.parseInt(row[5]));
-                settings.setExpiryMonth(Integer.parseInt(row[6]));
-                settings.setExpiryYear(Integer.parseInt(row[7]));
+                settings.setExpiryMonth(row[6]);
+                settings.setExpiryYear(row[7]);
                 settings.setBuySpread(Double.parseDouble(row[8]));
                 settings.setSellSpread(Double.parseDouble(row[9]));
                 settings.setCurrency(row[10]);
