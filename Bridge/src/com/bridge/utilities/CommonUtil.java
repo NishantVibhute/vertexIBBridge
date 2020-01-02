@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTextArea;
 
 /**
@@ -41,6 +43,80 @@ public class CommonUtil {
 
         BufferedWriter writer = new BufferedWriter(new FileWriter("Logs_" + dtf.format(now) + ".txt"));
         text.write(writer);
+
+    }
+
+    public static void writeOrderToFile() throws IOException {
+        int status = 1;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDateTime now = LocalDateTime.now();
+
+        File temp = new File("Transaction_" + dtf.format(now) + ".csv");
+
+        try {
+            // create FileWriter object with file as parameter
+            FileWriter outputfile = new FileWriter(temp);
+
+            // create CSVWriter object filewriter object as parameter
+            CSVWriter writer = new CSVWriter(outputfile);
+
+            // adding header to csv
+            String[] header = {"Symbol", "Currency", "Qty", "Action", "Executed Price", "Spread,Date/Time", "Broker"};
+            writer.writeNext(header);
+
+            for (int count = 0; count < FrmMain.modelOrder.getRowCount(); count++) {
+                String[] data1 = {FrmMain.modelOrder.getValueAt(count, 0).toString(),
+                    FrmMain.modelOrder.getValueAt(count, 1).toString(),
+                    FrmMain.modelOrder.getValueAt(count, 2).toString(),
+                    FrmMain.modelOrder.getValueAt(count, 3).toString(),
+                    FrmMain.modelOrder.getValueAt(count, 4).toString(),
+                    FrmMain.modelOrder.getValueAt(count, 5).toString(),
+                    FrmMain.modelOrder.getValueAt(count, 6).toString(),
+                    FrmMain.modelOrder.getValueAt(count, 7).toString()
+                };
+                writer.writeNext(data1);
+            }
+
+            // closing writer connection
+            writer.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            status = 0;
+        }
+
+    }
+
+    public static void readOrderFile() {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDateTime now = LocalDateTime.now();
+
+        File temp = new File("Transaction_" + dtf.format(now) + ".csv");
+        boolean exists = temp.exists();
+
+        if (exists) {
+            FileReader filereader = null;
+            try {
+                filereader = new FileReader(temp);
+                CSVReader csvReader = new CSVReaderBuilder(filereader)
+                        .withSkipLines(1)
+                        .build();
+                List<String[]> allData = csvReader.readAll();
+                int i = 0;
+                // print Data
+                for (String[] row : allData) {
+                    FrmMain.modelOrder.addRow(new Object[]{row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]});
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(CommonUtil.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                try {
+                    filereader.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(CommonUtil.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
 
     }
 

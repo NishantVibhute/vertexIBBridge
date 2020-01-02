@@ -5,13 +5,10 @@
  */
 package com.bridge.utilities;
 
-import com.bridge.forms.FrmMain;
 import com.ib.client.TickType;
 import com.ib.client.Types;
-import com.ib.controller.ApiController;
 import com.ib.controller.ApiController.TopMktDataAdapter;
 import static com.ib.controller.Formats.fmtPct;
-import javax.swing.table.AbstractTableModel;
 
 /**
  *
@@ -48,11 +45,11 @@ class IBDataNew extends TopMktDataAdapter {
         switch (tickType) {
             case BID:
                 m_bid = price;
-                System.out.println("m_bid" + m_bid);
+
                 break;
             case ASK:
                 m_ask = price;
-                System.out.println("m_ask" + m_ask);
+
                 break;
             case LAST:
                 m_last = price;

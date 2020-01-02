@@ -20,8 +20,10 @@ public class VertexData implements Runnable {
     String symbol;
     WebElement elem;
     TableRow tableRow;
+    boolean isContinue = false;
 
-    public VertexData(String symbol, WebElement elem, TableRow tableRow) {
+    public VertexData(String symbol, WebElement elem, TableRow tableRow, boolean isContinue) {
+        this.isContinue = isContinue;
         this.symbol = symbol;
         this.elem = elem;
         this.tableRow = tableRow;
@@ -30,10 +32,14 @@ public class VertexData implements Runnable {
         tableRow.showInitialVertexPrice(elemin.get(2).getAttribute("Name"), elemin.get(3).getAttribute("Name"));
     }
 
+    public void stop(boolean isContinue) {
+        this.isContinue = isContinue;
+    }
+
     @Override
     public void run() {
 
-        while (true) {
+        while (isContinue) {
             try {
 
                 List<WebElement> elemin = elem.findElements(By.className(""));

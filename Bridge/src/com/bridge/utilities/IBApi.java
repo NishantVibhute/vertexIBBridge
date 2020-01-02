@@ -3,11 +3,8 @@
 package com.bridge.utilities;
 
 import com.bridge.forms.FrmMain;
-import com.bridge.utilities.IConnectionConfiguration.DefaultConnectionConfiguration;
-import com.ib.client.Contract;
 import java.util.ArrayList;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
@@ -32,6 +29,7 @@ public class IBApi implements IConnectionHandler {
     private final Logger m_outLogger = new Logger(m_outLog);
     private ApiController m_controller;
     private final ArrayList<String> m_acctList = new ArrayList<>();
+    int port;
 
     // getter methods
     public ArrayList<String> accountList() {
@@ -56,6 +54,7 @@ public class IBApi implements IConnectionHandler {
     }
 
     public IBApi(IConnectionConfiguration connectionConfig, int port) {
+        this.port = port;
         m_connectionConfiguration = connectionConfig;
 
     }
@@ -68,7 +67,7 @@ public class IBApi implements IConnectionHandler {
     }
 
     private void run() {
-        controller().connect("127.0.0.1", 7498, 0, m_connectionConfiguration.getDefaultConnectOptions() != null ? "" : null);
+        controller().connect("127.0.0.1", this.port, 0, m_connectionConfiguration.getDefaultConnectOptions() != null ? "" : null);
     }
 
     @Override
