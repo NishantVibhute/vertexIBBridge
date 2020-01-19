@@ -84,8 +84,8 @@ public class FrmMain extends javax.swing.JFrame {
     public FrmMain() {
         try {
             initComponents();
-            String notepadApplicationPath = "C:\\Users\\Supriya\\AppData\\Local\\Programs\\Seven Ocean Trade\\VertexFX Trader.exe";
-            String winiumDriverPath = "H:\\Winium\\Winium.Desktop.Driver\\Winium.Desktop.Driver.exe";// To stop winium desktop driver
+            String notepadApplicationPath = "C:\\Users\\OM\\AppData\\Local\\Programs\\Seven Ocean Trade\\VertexFX Trader.exe";
+            String winiumDriverPath = "E:\\VertexIBBridge\\Winium.Desktop.Driver\\Winium.Desktop.Driver.exe";// To stop winium desktop driver
             //    		before start another session
             Process process = Runtime.getRuntime().exec("taskkill /F /IM Winium.Desktop.Driver.exe");
             process.waitFor();

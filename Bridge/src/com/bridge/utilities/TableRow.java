@@ -53,7 +53,7 @@ public class TableRow {
     String transactionType = BuySell.NEUTRAL.getName();
     String transactionTypeV = BuySell.NEUTRAL.getName();
     String transactionTypeI = BuySell.NEUTRAL.getName();
-    boolean isOrderConfirmed = false, vertexorderPlaced = false;
+    boolean isOrderConfirmed = false, vertexorderPlaced = false,ibOrderPlaced =false;
     WebElement element;
     int elemSize = 0;
     Thread t;
@@ -132,7 +132,6 @@ public class TableRow {
     public void updatePrice(double bid, double ask) {
         this.IBBid = bid;
         this.IBAsk = ask;
-//        System.out.println("" + IBBid);
         FrmMain.model.setValueAt(Formats.fmt(bid), rowNum, 4);
         FrmMain.model.setValueAt(Formats.fmt(ask), rowNum, 5);
 
@@ -149,7 +148,7 @@ public class TableRow {
     public void uodateVertexPrice(String bid, String ask) {
         this.vertexBid = Double.parseDouble(bid);
         this.vertexAsk = Double.parseDouble(ask);
-//        System.out.println("" + vertexBid);
+
         FrmMain.model.setValueAt(Formats.fmt(vertexBid), rowNum, 6);
         FrmMain.model.setValueAt(Formats.fmt(vertexAsk), rowNum, 7);
 
@@ -165,7 +164,7 @@ public class TableRow {
         FrmMain.model.setValueAt(Formats.fmt(sellSpread), rowNum, 3);
 
         if (ibQty < settings.getIBMaxOrder() && vertexQty <= settings.getVertexMaxOrder()) {
-            if (!vertexorderPlaced) {
+            if (!vertexorderPlaced && !ibOrderPlaced) {
                 if (buySpread <= settings.getBuySpread()) {
                     transactionType = BuySell.SELL.getName();
                     transactionTypeV = BuySell.SELL.getName();
@@ -183,13 +182,15 @@ public class TableRow {
                 }
 
                 if (!BuySell.NEUTRAL.getName().equals(transactionType)) {
-//                if (!) {
+
                     placeVertexOrder();
-//                }
+                   placeIBOrder();
+                   isOrderConfirmed = false;
+            vertexorderPlaced = false;
+            ibOrderPlaced = false;
                 }
-            } else {
-                checkVertexOrder();
-            }
+            } 
+            
         }
     }
 
@@ -199,27 +200,13 @@ public class TableRow {
         System.out.println("vertex order starts : " + dateFormat.format(d));
         if (BuySell.BUY.getName().equals(transactionTypeV)) {
 
-//            String p[] = element.getAttribute("ClickablePoint").split(",");
-//            FrmMain.robot.mouseMove(Integer.parseInt(p[0]), Integer.parseInt(p[1]));
-            //Clicks Left mouse button
-//            FrmMain.robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-//            FrmMain.robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
             FrmMain.actions.doubleClick(element).perform();
             FrmMain.robot.keyPress(KeyEvent.VK_CONTROL);
             FrmMain.robot.keyPress(KeyEvent.VK_B);
             FrmMain.robot.keyRelease(KeyEvent.VK_B);
             FrmMain.robot.keyRelease(KeyEvent.VK_CONTROL);
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(TableRow.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//            FrmMain.robot.keyPress(KeyEvent.VK_ALT);
-//            FrmMain.robot.keyPress(KeyEvent.VK_F4);
-//            FrmMain.robot.keyRelease(KeyEvent.VK_F4);
-//            FrmMain.robot.keyRelease(KeyEvent.VK_ALT);
+            
 
-//            FrmMain.driver.findElement(By.name("Close")).click();
             CommonUtil.setMessage("Call for Vertex Buy @" + vertexBid);
             Date d1 = new Date();
             vertexorderPlaced = true;
@@ -228,81 +215,29 @@ public class TableRow {
 
         if (BuySell.SELL.getName().equals(transactionTypeV)) {
 
-//            String p[] = element.getAttribute("ClickablePoint").split(",");
-//            FrmMain.robot.mouseMove(26, 291);
-            //Clicks Left mouse button
-//            FrmMain.robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-//            FrmMain.robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
             FrmMain.actions.doubleClick(element).perform();
             FrmMain.robot.keyPress(KeyEvent.VK_CONTROL);
             FrmMain.robot.keyPress(KeyEvent.VK_S);
             FrmMain.robot.keyRelease(KeyEvent.VK_S);
             FrmMain.robot.keyRelease(KeyEvent.VK_CONTROL);
-//            try {
-//                Thread.sleep(10);
-//
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(TableRow.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//            FrmMain.robot.keyPress(KeyEvent.VK_ALT);
-//            FrmMain.robot.keyPress(KeyEvent.VK_F4);
-//            FrmMain.robot.keyRelease(KeyEvent.VK_F4);
-//            FrmMain.robot.keyRelease(KeyEvent.VK_ALT);
+            
+
             CommonUtil.setMessage("Call for Vertex Sell @" + vertexAsk);
             Date d1 = new Date();
             System.out.println("vertex order placed : " + dateFormat.format(d1));
             vertexorderPlaced = true;
         }
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(TableRow.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<WebElement> elemin = FrmMain.tradeElem.findElements(By.className(""));
-        if (elemSize != elemin.size()) {
-            isOrderConfirmed = true;
-            checkVertexOrder();
-        }
+        
+        vertexQty++;
+            transactionType = BuySell.NEUTRAL.getName();
+            transactionTypeV = BuySell.NEUTRAL.getName();
+   
+
         Date d1 = new Date();
         System.out.println("vertex order ends : " + dateFormat.format(d1));
     }
 
-    public void checkVertexOrder() {
-        int j = 0;
-        boolean checking = true;
-        int size = 0;
-        while (checking) {
-            Date d1 = new Date();
-            System.out.println("checking vertex confirmation : " + dateFormat.format(d1));
-
-            List<WebElement> elemin = FrmMain.tradeElem.findElements(By.className(""));
-            size = elemin.size();
-            for (int i = elemin.size() - 1; i >= 0; i--) {
-                WebElement e = elemin.get(i);
-                if (e.getAttribute("LocalizedControlType").equals("item")) {
-                    if (e.getText().equals("Pending Orders:")) {
-                        checking = false;
-                        break;
-                    } else {
-                        j++;
-                    }
-                }
-            }
-        }
-
-        if (j == 0) {
-            CommonUtil.setMessage("Vertex order placed successfully");
-            isOrderConfirmed = false;
-            vertexorderPlaced = false;
-            vertexQty++;
-            elemSize = size;
-            transactionType = BuySell.NEUTRAL.getName();
-            transactionTypeV = BuySell.NEUTRAL.getName();
-            placeIBOrder();
-        }
-
-    }
-
+    
     public void placeIBOrder() {
         Date d = new Date();
         System.out.println("IB order Starts :" + dateFormat.format(d));
@@ -310,16 +245,10 @@ public class TableRow {
         String m_account = IBApi.INSTANCE.accountList().get(0);
         Order m_order = new Order();
         m_order.account(m_account.toUpperCase());
-//        m_order.modelCode(m_modelCode.getText().trim());
         m_order.action(transactionTypeI);
         m_order.totalQuantity(settings.getIBQty());
-//        m_order.displaySize(m_displaySize.getInt());
         m_order.orderType("MKT");
-//        m_order.lmtPrice(1.0);
-//        m_order.auxPrice(m_auxPrice.getDouble());
         m_order.tif("DAY");
-//        m_order.lmtPriceOffset(m_lmtPriceOffset.getDouble());
-//        m_order.triggerPrice(m_triggerPrice.getDouble());
 
         if (BuySell.BUY.getName().equals(transactionTypeI)) {
             CommonUtil.setMessage("Call for IB Buy @" + IBBid);
@@ -331,6 +260,7 @@ public class TableRow {
         }
 
         ibQty++;
+        ibOrderPlaced = true;
 
         IBApi.INSTANCE.controller().placeOrModifyOrder(m_contract, m_order, new ApiController.IOrderHandler() {
             @Override
@@ -397,6 +327,10 @@ public class TableRow {
         updateOrderTable(t1);
         transactionTypeI = BuySell.NEUTRAL.getName();
         price = 0;
+        
+        FrmMain.robot.keyPress(KeyEvent.VK_ESCAPE);
+            FrmMain.robot.keyRelease(KeyEvent.VK_ESCAPE);
+         
 
     }
 
