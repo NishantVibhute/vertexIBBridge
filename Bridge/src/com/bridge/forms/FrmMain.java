@@ -41,6 +41,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
@@ -84,18 +85,18 @@ public class FrmMain extends javax.swing.JFrame {
     public FrmMain() {
         try {
             initComponents();
-            String notepadApplicationPath = "C:\\Users\\OM\\AppData\\Local\\Programs\\Seven Ocean Trade\\VertexFX Trader.exe";
-            String winiumDriverPath = "E:\\VertexIBBridge\\Winium.Desktop.Driver\\Winium.Desktop.Driver.exe";// To stop winium desktop driver
+//            String notepadApplicationPath = "C:\\Users\\OM\\AppData\\Local\\Programs\\Seven Ocean Trade\\VertexFX Trader.exe";
+//            String winiumDriverPath = "E:\\old data\\Personal\\Winium\\softwares\\Winium.Desktop.Driver\\Winium.Desktop.Driver.exe";// To stop winium desktop driver
             //    		before start another session
-            Process process = Runtime.getRuntime().exec("taskkill /F /IM Winium.Desktop.Driver.exe");
-            process.waitFor();
-            process.destroy();
-            DesktopOptions options = new DesktopOptions(); // Initiate Winium Desktop Options
-            options.setApplicationPath(notepadApplicationPath); // Set notepad application path
-            WiniumDriverService service = new WiniumDriverService.Builder().usingDriverExecutable(new File(winiumDriverPath)).usingPort(9999).withVerbose(true).withLogFile(new File("G:\\winiLog.txt")).withSilent(false).buildDesktopService();
-            service.start(); // Build and Start a Winium Driver service
-            Thread.sleep(5000);
-            driver = new WiniumDriver(service, options); // Start a winium driver
+//            Process process = Runtime.getRuntime().exec("taskkill /F /IM Winium.Desktop.Driver.exe");
+//            process.waitFor();
+//            process.destroy();
+//            DesktopOptions options = new DesktopOptions(); // Initiate Winium Desktop Options
+//            options.setApplicationPath(notepadApplicationPath); // Set notepad application path
+//            WiniumDriverService service = new WiniumDriverService.Builder().usingDriverExecutable(new File(winiumDriverPath)).usingPort(9999).withVerbose(true).withLogFile(new File("G:\\winiLog.txt")).withSilent(false).buildDesktopService();
+//            service.start(); // Build and Start a Winium Driver service
+//            Thread.sleep(5000);
+//            driver = new WiniumDriver(service, options); // Start a winium driver
             Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
             int x = (int) ((dimension.getWidth() - getWidth()) / 2);
             int y = (int) ((dimension.getHeight() - getHeight()) / 2);
@@ -115,7 +116,7 @@ public class FrmMain extends javax.swing.JFrame {
             } catch (IOException ex) {
                 Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
             }
-            CommonUtil.setMessage("Connected");
+            CommonUtil.setMessage("Application Started");
 
             int status = CommonUtil.checkSettingsExist();
             if (status != 0) {
@@ -123,12 +124,14 @@ public class FrmMain extends javax.swing.JFrame {
 
                 for (Settings set : settingsList) {
 
-                    model.addRow(set.getTableRow().getRow());
+                    model.addRow(set.getTableRow().getInitalRow());
                 }
+
             }
             this.addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent e) {
                     try {
+                        CommonUtil.setMessage("Application Terminated");
                         CommonUtil.writeFile(txtMessages);
 
                         CommonUtil.writeOrderToFile();
@@ -193,18 +196,23 @@ public class FrmMain extends javax.swing.JFrame {
         tbSignal.getColumnModel().getColumn(9).setCellRenderer(centerRenderer);
         StartButtonRenderer startButtonRenderer = new StartButtonRenderer();
         tbSignal.getColumnModel().getColumn(10).setCellRenderer(startButtonRenderer);
+        tbSignal.getColumnModel().getColumn(10).setResizable(false);
         StoptButtonRenderer stoptButtonRenderer = new StoptButtonRenderer();
         tbSignal.getColumnModel().getColumn(11).setCellRenderer(stoptButtonRenderer);
+        tbSignal.getColumnModel().getColumn(11).setResizable(false);
         SettingtButtonRenderer settingtButtonRenderer = new SettingtButtonRenderer();
         tbSignal.getColumnModel().getColumn(12).setCellRenderer(settingtButtonRenderer);
+        tbSignal.getColumnModel().getColumn(12).setResizable(false);
         tbSignal.setRowHeight(35);
         tbSignal.setOpaque(true);
         tbSignal.setFillsViewportHeight(true);
         tbSignal.setBackground(ivory);
         tbSignal.setForeground(new Color(255, 255, 255));
-        tbSignal.setSelectionBackground(Color.WHITE);
-        tbSignal.setSelectionForeground(Color.BLACK);
+//        tbSignal.setSelectionBackground(Color.WHITE);
+        tbSignal.setSelectionBackground(getBackground());
+        tbSignal.setSelectionForeground(Color.white);
         resizeColumns();
+
         panSignals.add(scroll, BorderLayout.CENTER);
         MouseMotionAdapter mma;
         mma = new MouseMotionAdapter() {
@@ -222,31 +230,38 @@ public class FrmMain extends javax.swing.JFrame {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
+
                     int selectedRow = tbSignal.getSelectedRow();
                     int selectedCol = tbSignal.getSelectedColumn();
                     tbSignal.clearSelection();
                     if (selectedRow >= 0) {
                         if (selectedCol == 10) {
-                            if (isIBConnected) {
-                                startCalculation.StartC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
-                                settingsList.get(selectedRow).getTableRow().startContractData();
-                            } else {
-                                String text = JOptionPane.showInputDialog("Interactive Broker is Not Connected \nEnter Port to connect", "7496");
+                            if (settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red")) {
+                                if (isIBConnected) {
+                                    startCalculation.StartC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
+                                    settingsList.get(selectedRow).getTableRow().startContractData();
+                                } else {
+                                    String text = JOptionPane.showInputDialog("Interactive Broker is Not Connected \nEnter Port to connect", "7496");
 
-                                if (text != null) {
-                                    int port = Integer.parseInt(text);
-                                    connectIB(port);
+                                    if (text != null) {
+                                        int port = Integer.parseInt(text);
+                                        connectIB(port);
+                                    }
                                 }
                             }
                         }
 
                         if (selectedCol == 11) {
-                            settingsList.get(selectedRow).getTableRow().stop();
-                            stopCalculation.StopC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
+                            if (!settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red")) {
+                                settingsList.get(selectedRow).getTableRow().stop();
+                                stopCalculation.StopC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
+                            }
                         }
                         if (selectedCol == 12) {
-                            DigSettings f = new DigSettings(new javax.swing.JFrame(), true);
-                            f.setPosition(selectedRow);
+                            if (settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red")) {
+                                DigSettings f = new DigSettings(new javax.swing.JFrame(), true);
+                                f.setPosition(selectedRow);
+                            }
                         }
 
                     }
@@ -346,6 +361,7 @@ public class FrmMain extends javax.swing.JFrame {
             column = jTableColumnModel.getColumn(i);
             int pWidth = Math.round(columnWidthPercentage[i] * tW);
             column.setPreferredWidth(pWidth);
+
         }
     }
 
@@ -363,15 +379,17 @@ public class FrmMain extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         lblIBStatus = new javax.swing.JLabel();
         butAddNew = new javax.swing.JLabel();
-        lblStatusMessage = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         lblVertexStatus = new javax.swing.JLabel();
         panSignals = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         panOrders = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         txtMessages = new javax.swing.JTextArea();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
         panMessage = new javax.swing.JPanel();
         panOrder = new javax.swing.JPanel();
 
@@ -402,15 +420,6 @@ public class FrmMain extends javax.swing.JFrame {
             }
         });
 
-        lblStatusMessage.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        lblStatusMessage.setForeground(new java.awt.Color(255, 255, 255));
-        lblStatusMessage.setText("Connect IB");
-        lblStatusMessage.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                lblStatusMessageMouseClicked(evt);
-            }
-        });
-
         jLabel5.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setText("Vertex");
@@ -436,8 +445,6 @@ public class FrmMain extends javax.swing.JFrame {
                 .addComponent(lblVertexStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(lblStatusMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(butAddNew, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -454,20 +461,19 @@ public class FrmMain extends javax.swing.JFrame {
                     .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(lblVertexStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblIBStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblStatusMessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(lblIBStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(7, 7, 7))
         );
 
-        panSignals.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 179, 66), 2));
+        panSignals.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 179, 66), 0));
         panSignals.setLayout(new java.awt.BorderLayout());
 
         jPanel3.setBackground(new java.awt.Color(0, 0, 0));
-        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 179, 66), 2));
+        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 179, 66), 0));
 
-        jTabbedPane1.setBackground(new java.awt.Color(0, 0, 0));
-        jTabbedPane1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jTabbedPane1.setForeground(new java.awt.Color(236, 179, 66));
+        jTabbedPane1.setBackground(new java.awt.Color(255, 255, 255));
+        jTabbedPane1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 0));
+        jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
         jTabbedPane1.setFont(new java.awt.Font("Times New Roman", 1, 14)); // NOI18N
 
         panOrders.setBackground(new java.awt.Color(0, 0, 0));
@@ -477,17 +483,55 @@ public class FrmMain extends javax.swing.JFrame {
         txtMessages.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
         txtMessages.setForeground(new java.awt.Color(255, 255, 255));
         txtMessages.setRows(5);
+        txtMessages.setBorder(null);
+        txtMessages.setSelectionColor(new java.awt.Color(255, 0, 51));
         jScrollPane2.setViewportView(txtMessages);
+
+        jPanel4.setBackground(new java.awt.Color(57, 74, 108));
+        jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 221, 242)));
+
+        jLabel2.setFont(new java.awt.Font("Times New Roman", 1, 14)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setText("Messages");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(749, Short.MAX_VALUE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 32, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane2)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout panOrdersLayout = new javax.swing.GroupLayout(panOrders);
         panOrders.setLayout(panOrdersLayout);
         panOrdersLayout.setHorizontalGroup(
             panOrdersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 991, Short.MAX_VALUE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         panOrdersLayout.setVerticalGroup(
             panOrdersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Messages", panOrders);
@@ -510,15 +554,17 @@ public class FrmMain extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Orders", panMessage);
 
+        jTabbedPane1.setSelectedIndex(1);
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -534,7 +580,7 @@ public class FrmMain extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(panHead, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(panSignals, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                .addComponent(panSignals, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -561,12 +607,6 @@ public class FrmMain extends javax.swing.JFrame {
         f.setPosition(-1);
     }//GEN-LAST:event_butAddNewMouseClicked
 
-    private void lblStatusMessageMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblStatusMessageMouseClicked
-        // TODO add your handling code here:
-
-//        iBApi.getData();
-    }//GEN-LAST:event_lblStatusMessageMouseClicked
-
     private void lblIBStatusMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblIBStatusMouseClicked
         // TODO add your handling code here:
         String text = JOptionPane.showInputDialog(this, "Enter Port", "7496");
@@ -581,7 +621,7 @@ public class FrmMain extends javax.swing.JFrame {
 
     private void lblVertexStatusMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblVertexStatusMouseClicked
         // TODO add your handling code here:
-        lblStatusMessage.setText("Connecting Vertex. Please Wait ...!!!");
+//        lblStatusMessage.setText("Connecting Vertex. Please Wait ...!!!");
         tradeTable = FrmMain.driver.findElement(By.name("Trade"));
         tradeElem = tradeTable.findElement(By.className("SysListView32"));
 
@@ -599,20 +639,22 @@ public class FrmMain extends javax.swing.JFrame {
         lblVertexStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif")));
         lblVertexStatus.revalidate();
         lblVertexStatus.repaint();
-        lblStatusMessage.setText("");
+//        lblStatusMessage.setText("");
 
     }//GEN-LAST:event_lblVertexStatusMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel butAddNew;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     public static javax.swing.JLabel lblIBStatus;
-    private javax.swing.JLabel lblStatusMessage;
     private javax.swing.JLabel lblVertexStatus;
     public static javax.swing.JPanel panHead;
     private javax.swing.JPanel panMessage;

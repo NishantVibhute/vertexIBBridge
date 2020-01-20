@@ -5,6 +5,7 @@
  */
 package com.bridge.renderer;
 
+import static com.bridge.forms.FrmMain.panHead;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -32,7 +33,8 @@ public class StartButtonRenderer extends DefaultTableCellRenderer {
 //            l.setFont(new java.awt.Font("Times New Roman", 0, 12));
             l.setCursor(new Cursor(Cursor.HAND_CURSOR));
             l.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/START.png")));
-            JPanel p = (JPanel) value;
+
+            JPanel p = new JPanel();
             p.setLayout(new BorderLayout());
             p.add(l, BorderLayout.CENTER);
             p.setBackground(Color.BLACK);

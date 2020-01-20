@@ -53,7 +53,7 @@ public class TableRow {
     String transactionType = BuySell.NEUTRAL.getName();
     String transactionTypeV = BuySell.NEUTRAL.getName();
     String transactionTypeI = BuySell.NEUTRAL.getName();
-    boolean isOrderConfirmed = false, vertexorderPlaced = false,ibOrderPlaced =false;
+    boolean isOrderConfirmed = false, vertexorderPlaced = false, ibOrderPlaced = false;
     WebElement element;
     int elemSize = 0;
     Thread t;
@@ -76,6 +76,11 @@ public class TableRow {
         this.rowNum = rowNum;
         this.vertexSymbol = settings.getVertexSymbol();
 
+    }
+
+    public Object[] getInitalRow() {
+        Object[] row1 = {this.color, this.IBSymbol, "", "", "", "", "", "", this.buyPara, this.sellPara, new JPanel(), "", new JPanel()};
+        return row1;
     }
 
     public Object[] getRow() {
@@ -184,13 +189,13 @@ public class TableRow {
                 if (!BuySell.NEUTRAL.getName().equals(transactionType)) {
 
                     placeVertexOrder();
-                   placeIBOrder();
-                   isOrderConfirmed = false;
-            vertexorderPlaced = false;
-            ibOrderPlaced = false;
+                    placeIBOrder();
+                    isOrderConfirmed = false;
+                    vertexorderPlaced = false;
+                    ibOrderPlaced = false;
                 }
-            } 
-            
+            }
+
         }
     }
 
@@ -205,7 +210,6 @@ public class TableRow {
             FrmMain.robot.keyPress(KeyEvent.VK_B);
             FrmMain.robot.keyRelease(KeyEvent.VK_B);
             FrmMain.robot.keyRelease(KeyEvent.VK_CONTROL);
-            
 
             CommonUtil.setMessage("Call for Vertex Buy @" + vertexBid);
             Date d1 = new Date();
@@ -220,24 +224,21 @@ public class TableRow {
             FrmMain.robot.keyPress(KeyEvent.VK_S);
             FrmMain.robot.keyRelease(KeyEvent.VK_S);
             FrmMain.robot.keyRelease(KeyEvent.VK_CONTROL);
-            
 
             CommonUtil.setMessage("Call for Vertex Sell @" + vertexAsk);
             Date d1 = new Date();
             System.out.println("vertex order placed : " + dateFormat.format(d1));
             vertexorderPlaced = true;
         }
-        
+
         vertexQty++;
-            transactionType = BuySell.NEUTRAL.getName();
-            transactionTypeV = BuySell.NEUTRAL.getName();
-   
+        transactionType = BuySell.NEUTRAL.getName();
+        transactionTypeV = BuySell.NEUTRAL.getName();
 
         Date d1 = new Date();
         System.out.println("vertex order ends : " + dateFormat.format(d1));
     }
 
-    
     public void placeIBOrder() {
         Date d = new Date();
         System.out.println("IB order Starts :" + dateFormat.format(d));
@@ -327,10 +328,9 @@ public class TableRow {
         updateOrderTable(t1);
         transactionTypeI = BuySell.NEUTRAL.getName();
         price = 0;
-        
+
         FrmMain.robot.keyPress(KeyEvent.VK_ESCAPE);
-            FrmMain.robot.keyRelease(KeyEvent.VK_ESCAPE);
-         
+        FrmMain.robot.keyRelease(KeyEvent.VK_ESCAPE);
 
     }
 

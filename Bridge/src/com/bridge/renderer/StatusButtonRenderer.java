@@ -33,7 +33,7 @@ public class StatusButtonRenderer extends DefaultTableCellRenderer {
             l.setCursor(new Cursor(Cursor.HAND_CURSOR));
             if (value.toString().equalsIgnoreCase("red")) {
                 l.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/redSignal.png")));
-            } else {
+            } else if (value.toString().equalsIgnoreCase("Green")) {
                 l.setIcon(new AnimatedIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif"))));
             }
             JPanel p = new JPanel();

@@ -25,18 +25,16 @@ public class StoptButtonRenderer extends DefaultTableCellRenderer {
             boolean hasFocus, int row, int column) {
 
         if (value instanceof JPanel) {
-            //This time return only the JLabel without icon
             JLabel l = new JLabel("");
             l.setForeground(Color.BLACK);
             l.setHorizontalAlignment(CENTER);
-//            l.setFont(new java.awt.Font("Times New Roman", 0, 12));
             l.setCursor(new Cursor(Cursor.HAND_CURSOR));
             l.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/STOP.png")));
-            JPanel p = (JPanel) value;
+
+            JPanel p = new JPanel();
             p.setLayout(new BorderLayout());
             p.add(l, BorderLayout.CENTER);
             p.setBackground(Color.BLACK);
-//            p.setBorder(new LineBorder(Color.WHITE, 4));
             return p;
         } else {
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
