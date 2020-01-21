@@ -37,6 +37,7 @@ public class FrmLogin extends javax.swing.JFrame {
 
             setVisible(true);
             setLocation(x, y);
+
         } catch (Exception ex) {
             Logger.getLogger(FrmLogin.class.getName()).log(Level.SEVERE, null, ex);
         }

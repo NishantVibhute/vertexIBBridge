@@ -41,9 +41,9 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingWorker;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -71,7 +71,7 @@ public class FrmMain extends javax.swing.JFrame {
     StopCalculation stopCalculation = new StopCalculation();
     public static List<Settings> settingsList = new ArrayList<>();
     IBApi iBApi;
-    public static boolean isIBConnected = false;
+    public static boolean isIBConnected = false, isVertexConnected = false;
     public static WebDriver driver = null;
 
     public static WebElement tradeTable, marketWatchTable;
@@ -85,18 +85,18 @@ public class FrmMain extends javax.swing.JFrame {
     public FrmMain() {
         try {
             initComponents();
-//            String notepadApplicationPath = "C:\\Users\\OM\\AppData\\Local\\Programs\\Seven Ocean Trade\\VertexFX Trader.exe";
-//            String winiumDriverPath = "E:\\old data\\Personal\\Winium\\softwares\\Winium.Desktop.Driver\\Winium.Desktop.Driver.exe";// To stop winium desktop driver
-            //    		before start another session
-//            Process process = Runtime.getRuntime().exec("taskkill /F /IM Winium.Desktop.Driver.exe");
-//            process.waitFor();
-//            process.destroy();
-//            DesktopOptions options = new DesktopOptions(); // Initiate Winium Desktop Options
-//            options.setApplicationPath(notepadApplicationPath); // Set notepad application path
-//            WiniumDriverService service = new WiniumDriverService.Builder().usingDriverExecutable(new File(winiumDriverPath)).usingPort(9999).withVerbose(true).withLogFile(new File("G:\\winiLog.txt")).withSilent(false).buildDesktopService();
-//            service.start(); // Build and Start a Winium Driver service
+            String applicationPath = "C:\\Users\\Supriya\\AppData\\Local\\Programs\\Seven Ocean Trade\\VertexFX Trader.exe";
+            String winiumDriverPath = "dependencies/Winium.Desktop.Driver.exe";// To stop winium desktop driver
+//            before start another session
+            Process process = Runtime.getRuntime().exec("taskkill /F /IM Winium.Desktop.Driver.exe");
+            process.waitFor();
+            process.destroy();
+            DesktopOptions options = new DesktopOptions(); // Initiate Winium Desktop Options
+            options.setApplicationPath(applicationPath); // Set notepad application path
+            WiniumDriverService service = new WiniumDriverService.Builder().usingDriverExecutable(new File(winiumDriverPath)).usingPort(9999).withVerbose(true).withLogFile(new File("winiLog.txt")).withSilent(false).buildDesktopService();
+            service.start(); // Build and Start a Winium Driver service
 //            Thread.sleep(5000);
-//            driver = new WiniumDriver(service, options); // Start a winium driver
+            driver = new WiniumDriver(service, options); // Start a winium driver
             Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
             int x = (int) ((dimension.getWidth() - getWidth()) / 2);
             int y = (int) ((dimension.getHeight() - getHeight()) / 2);
@@ -135,6 +135,8 @@ public class FrmMain extends javax.swing.JFrame {
                         CommonUtil.writeFile(txtMessages);
 
                         CommonUtil.writeOrderToFile();
+                        System.exit(0);
+
                     } catch (IOException ex) {
                         Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -236,29 +238,36 @@ public class FrmMain extends javax.swing.JFrame {
                     tbSignal.clearSelection();
                     if (selectedRow >= 0) {
                         if (selectedCol == 10) {
-                            if (settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red")) {
-                                if (isIBConnected) {
+                            if (settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red") || settingsList.get(selectedRow).getColor().equalsIgnoreCase("Yellow")) {
+                                if (!isIBConnected || !isVertexConnected) {
+
+                                    if (!isIBConnected) {
+                                        String text = JOptionPane.showInputDialog(FrmMain.this, "Interactive Broker is Not Connected \nEnter Port to connect", "7496");
+
+                                        if (text != null) {
+                                            int port = Integer.parseInt(text);
+                                            connectIB(port);
+                                        }
+                                    } else if (!isVertexConnected) {
+                                        JOptionPane.showMessageDialog(FrmMain.this, "Please Start Vertex Service", "Information", JOptionPane.INFORMATION_MESSAGE);
+                                    }
+
+                                } else {
+
                                     startCalculation.StartC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
                                     settingsList.get(selectedRow).getTableRow().startContractData();
-                                } else {
-                                    String text = JOptionPane.showInputDialog("Interactive Broker is Not Connected \nEnter Port to connect", "7496");
-
-                                    if (text != null) {
-                                        int port = Integer.parseInt(text);
-                                        connectIB(port);
-                                    }
                                 }
                             }
                         }
 
                         if (selectedCol == 11) {
-                            if (!settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red")) {
+                            if (!settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red") || !settingsList.get(selectedRow).getColor().equalsIgnoreCase("Yellow")) {
                                 settingsList.get(selectedRow).getTableRow().stop();
                                 stopCalculation.StopC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
                             }
                         }
                         if (selectedCol == 12) {
-                            if (settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red")) {
+                            if (settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red") || settingsList.get(selectedRow).getColor().equalsIgnoreCase("Yellow")) {
                                 DigSettings f = new DigSettings(new javax.swing.JFrame(), true);
                                 f.setPosition(selectedRow);
                             }
@@ -482,8 +491,9 @@ public class FrmMain extends javax.swing.JFrame {
         txtMessages.setColumns(20);
         txtMessages.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
         txtMessages.setForeground(new java.awt.Color(255, 255, 255));
+        txtMessages.setLineWrap(true);
         txtMessages.setRows(5);
-        txtMessages.setBorder(null);
+        txtMessages.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
         txtMessages.setSelectionColor(new java.awt.Color(255, 0, 51));
         jScrollPane2.setViewportView(txtMessages);
 
@@ -554,8 +564,6 @@ public class FrmMain extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Orders", panMessage);
 
-        jTabbedPane1.setSelectedIndex(1);
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -564,7 +572,7 @@ public class FrmMain extends javax.swing.JFrame {
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -622,24 +630,57 @@ public class FrmMain extends javax.swing.JFrame {
     private void lblVertexStatusMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblVertexStatusMouseClicked
         // TODO add your handling code here:
 //        lblStatusMessage.setText("Connecting Vertex. Please Wait ...!!!");
-        tradeTable = FrmMain.driver.findElement(By.name("Trade"));
-        tradeElem = tradeTable.findElement(By.className("SysListView32"));
 
-        marketWatchTable = FrmMain.driver.findElement(By.name("Market Watch"));
-        marketWatchElem = marketWatchTable.findElement(By.className("SysListView32"));
-        actions = new Actions(driver);
+        final DigMessage loading = new DigMessage(this, true);
 
-        try {
-            robot = new Robot();
-        } catch (AWTException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+//        final JDialog loading = new JDialog(this);
+//        loading.setSize(200, 50);
+//        JPanel p1 = new JPanel(new BorderLayout());
+//        p1.setSize(200, 50);
+//        p1.add(new JLabel("Please wait..."), BorderLayout.CENTER);
+//
+//        loading.setUndecorated(true);
+//        loading.getContentPane().add(p1);
+//        loading.pack();
+//        loading.setLocationRelativeTo(this);
+//        loading.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+//        loading.setModal(true);
+        SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+            @Override
+            protected String doInBackground() throws InterruptedException {
+                tradeTable = FrmMain.driver.findElement(By.name("Trade"));
+                tradeElem = tradeTable.findElement(By.className("SysListView32"));
 
-        lblVertexStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif")));
-        lblVertexStatus.revalidate();
-        lblVertexStatus.repaint();
+                marketWatchTable = FrmMain.driver.findElement(By.name("Market Watch"));
+                marketWatchElem = marketWatchTable.findElement(By.className("SysListView32"));
+                actions = new Actions(driver);
+
+                try {
+                    robot = new Robot();
+                } catch (AWTException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                isVertexConnected = true;
+                lblVertexStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif")));
+                lblVertexStatus.revalidate();
+                lblVertexStatus.repaint();
 //        lblStatusMessage.setText("");
+                return "Success";
+            }
+
+            @Override
+            protected void done() {
+                loading.dispose();
+            }
+        };
+        worker.execute();
+        loading.setVisible(true);
+        try {
+            worker.get();
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
 
     }//GEN-LAST:event_lblVertexStatusMouseClicked
 

@@ -99,7 +99,7 @@ public class TableRow {
         m_contract.primaryExch(compExch);
         m_contract.currency(settings.getCurrency());
 
-        System.out.println("requesting");
+//        System.out.println("requesting");
         IBApi.INSTANCE.controller().reqTopMktData(m_contract, "", false, ibData);
 
         element = FrmMain.marketWatchElem.findElements(By.name(vertexSymbol + " /" + settings.getExpiryMonth())).get(0);
@@ -202,46 +202,35 @@ public class TableRow {
     public void placeVertexOrder() {
 
         Date d = new Date();
-        System.out.println("vertex order starts : " + dateFormat.format(d));
+        CommonUtil.setMessage("vertex order starts : " + dateFormat.format(d));
         if (BuySell.BUY.getName().equals(transactionTypeV)) {
-
             FrmMain.actions.doubleClick(element).perform();
             FrmMain.robot.keyPress(KeyEvent.VK_CONTROL);
             FrmMain.robot.keyPress(KeyEvent.VK_B);
             FrmMain.robot.keyRelease(KeyEvent.VK_B);
             FrmMain.robot.keyRelease(KeyEvent.VK_CONTROL);
-
-            CommonUtil.setMessage("Call for Vertex Buy @" + vertexBid);
-            Date d1 = new Date();
-            vertexorderPlaced = true;
-            System.out.println("vertex order placed : " + dateFormat.format(d1));
         }
 
         if (BuySell.SELL.getName().equals(transactionTypeV)) {
-
             FrmMain.actions.doubleClick(element).perform();
             FrmMain.robot.keyPress(KeyEvent.VK_CONTROL);
             FrmMain.robot.keyPress(KeyEvent.VK_S);
             FrmMain.robot.keyRelease(KeyEvent.VK_S);
             FrmMain.robot.keyRelease(KeyEvent.VK_CONTROL);
-
-            CommonUtil.setMessage("Call for Vertex Sell @" + vertexAsk);
-            Date d1 = new Date();
-            System.out.println("vertex order placed : " + dateFormat.format(d1));
-            vertexorderPlaced = true;
         }
+        vertexorderPlaced = true;
+        Date d1 = new Date();
+        CommonUtil.setMessage("vertex order placed : " + dateFormat.format(d1));
 
         vertexQty++;
         transactionType = BuySell.NEUTRAL.getName();
         transactionTypeV = BuySell.NEUTRAL.getName();
 
-        Date d1 = new Date();
-        System.out.println("vertex order ends : " + dateFormat.format(d1));
     }
 
     public void placeIBOrder() {
         Date d = new Date();
-        System.out.println("IB order Starts :" + dateFormat.format(d));
+        CommonUtil.setMessage("IB order Starts :" + dateFormat.format(d));
         double price = 0;
         String m_account = IBApi.INSTANCE.accountList().get(0);
         Order m_order = new Order();
@@ -252,11 +241,11 @@ public class TableRow {
         m_order.tif("DAY");
 
         if (BuySell.BUY.getName().equals(transactionTypeI)) {
-            CommonUtil.setMessage("Call for IB Buy @" + IBBid);
+
             price = IBBid;
         }
         if (BuySell.SELL.getName().equals(transactionTypeI)) {
-            CommonUtil.setMessage("Call for IB Sell @" + IBAsk);
+
             price = IBAsk;
         }
 
@@ -281,16 +270,14 @@ public class TableRow {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        System.out.println("" + errorMsg);
+                        CommonUtil.setMessage("" + errorMsg);
                     }
                 });
             }
         });
 
-        CommonUtil.setMessage("IB order placed successfully");
-
         Date d2 = new Date();
-        System.out.println("IB order ends :" + dateFormat.format(d2));
+        CommonUtil.setMessage("IB order placed :" + dateFormat.format(d2));
 
         TransactionData t = new TransactionData();
 
@@ -301,13 +288,13 @@ public class TableRow {
             if (e.getAttribute("LocalizedControlType").equals("item")) {
                 List<WebElement> elemin11 = e.findElements(By.className(""));
                 t.setDateTime(elemin11.get(3).getAttribute("Name"));
-                t.setType(elemin11.get(4).getAttribute("Name"));
+                t.setType(elemin11.get(4).getAttribute("Name").toUpperCase());
                 t.setQty(elemin11.get(5).getAttribute("Name"));
                 t.setSymbol(elemin11.get(6).getAttribute("Name"));
                 t.setPrice(elemin11.get(7).getAttribute("Name"));
                 t.setSpread("" + spread);
                 t.setCurrency(settings.getCurrency());
-                t.setBroker("Vertex");
+                t.setBroker("VERTEX");
                 updateOrderTable(t);
                 break;
             }
@@ -318,7 +305,7 @@ public class TableRow {
 
         Date d1 = new Date();
         t1.setDateTime(dateFormat.format(d1));
-        t1.setType(transactionTypeI);
+        t1.setType(transactionTypeI.toUpperCase());
         t1.setQty("" + settings.getIBQty());
         t1.setSymbol(settings.getIBSymbol());
         t1.setPrice("" + price);
@@ -331,6 +318,13 @@ public class TableRow {
 
         FrmMain.robot.keyPress(KeyEvent.VK_ESCAPE);
         FrmMain.robot.keyRelease(KeyEvent.VK_ESCAPE);
+
+        if (ibQty >= settings.getIBMaxOrder() && vertexQty >= settings.getVertexMaxOrder()) {
+
+            CommonUtil.setMessage("IB : " + this.IBSymbol + " Total Qty : " + ibQty + "  , Vertex : " + this.vertexSymbol + "Total Qty : " + vertexQty + " Max Order quantity reached");
+            stop();
+            FrmMain.model.setValueAt("Yellow", rowNum, 0);
+        }
 
     }
 

@@ -31,7 +31,7 @@ public class OrdersModel implements ApiController.ILiveOrderHandler {
 
     @Override
     public void orderStatus(int orderId, OrderStatus status, double filled, double remaining, double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
-        System.out.println(orderId + "-" + status.name());
+//        System.out.println(orderId + "-" + status.name());
     }
 
     @Override

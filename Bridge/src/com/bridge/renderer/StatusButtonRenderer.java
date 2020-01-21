@@ -12,7 +12,6 @@ import java.awt.Cursor;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 
 public class StatusButtonRenderer extends DefaultTableCellRenderer {
@@ -34,7 +33,9 @@ public class StatusButtonRenderer extends DefaultTableCellRenderer {
             if (value.toString().equalsIgnoreCase("red")) {
                 l.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/redSignal.png")));
             } else if (value.toString().equalsIgnoreCase("Green")) {
-                l.setIcon(new AnimatedIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif"))));
+                l.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/greenSignal.png")));
+            } else if (value.toString().equalsIgnoreCase("Yellow")) {
+                l.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bridge/images/greenSignalCompleted.png")));
             }
             JPanel p = new JPanel();
             p.setLayout(new BorderLayout());

@@ -1,3 +1,3 @@
 "IB_Symbol,IB_Qty,IB_Max_order,Vertex_Symbol,Vertex_Qty,Vertex_Max_order,Expiry_month,Expiry_year,Buy_Spread,Sell_Spread,Currency,Sector_Type,Exchange,Primary Exchange"
-"GC","1","1","GOLD","1","1","02","2020","0.2","0.8","USD","FUT","NYMEX","NYMEX"
-"CL","1","1","CRUDE","2","2","01","2020","-0.6","0.19","USD","FUT","NYMEX","NYMEX"
+"GC","1","1","GOLD","1","1","02","2020","1.0","0.8","USD","FUT","NYMEX","NYMEX"
+"CL","1","1","CRUDE","2","2","02","2020","-0.5","0.19","USD","FUT","NYMEX","NYMEX"

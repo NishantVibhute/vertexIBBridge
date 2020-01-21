@@ -3,12 +3,6 @@
 package com.bridge.utilities;
 
 import com.bridge.forms.FrmMain;
-import java.util.ArrayList;
-
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-
 import com.ib.client.Types.NewsType;
 import com.ib.controller.ApiConnection.ILogger;
 import com.ib.controller.ApiController;
@@ -16,7 +10,11 @@ import com.ib.controller.ApiController.IBulletinHandler;
 import com.ib.controller.ApiController.IConnectionHandler;
 import com.ib.controller.ApiController.ITimeHandler;
 import com.ib.controller.Formats;
+import java.util.ArrayList;
 import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 
 public class IBApi implements IConnectionHandler {
 
@@ -119,7 +117,7 @@ public class IBApi implements IConnectionHandler {
 
     @Override
     public void show(final String str) {
-        System.out.println(str);
+        CommonUtil.setMessage(str);
     }
 
     @Override

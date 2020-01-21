@@ -12,7 +12,11 @@ package com.bridge.forms;
 public class main {
 
     public static void main(String[] args) {
-        new FrmLogin();
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new FrmMain();
+            }
+        });
     }
 
 }

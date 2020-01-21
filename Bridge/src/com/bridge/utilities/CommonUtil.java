@@ -31,7 +31,7 @@ import javax.swing.JTextArea;
 public class CommonUtil {
 
     public static void setMessage(String message) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("  dd-MM-yyyy HH:mm:ss");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         FrmMain.txtMessages.append(dtf.format(now) + " : " + message + "\n");
     }

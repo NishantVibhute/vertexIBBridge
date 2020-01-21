@@ -38,7 +38,7 @@ public class VertexData implements Runnable {
 
     @Override
     public void run() {
-
+        System.out.println("running thread for" + this.symbol);
         while (isContinue) {
             try {
 
