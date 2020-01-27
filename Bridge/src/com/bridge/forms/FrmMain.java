@@ -78,6 +78,7 @@ public class FrmMain extends javax.swing.JFrame {
     public static WebElement tradeElem, marketWatchElem;
     public static Robot robot;
     public static Actions actions;
+    public static String title;
 
     /**
      * Creates new form FrmMain
@@ -96,7 +97,8 @@ public class FrmMain extends javax.swing.JFrame {
             WiniumDriverService service = new WiniumDriverService.Builder().usingDriverExecutable(new File(winiumDriverPath)).usingPort(9999).withVerbose(true).withLogFile(new File("winiLog.txt")).withSilent(false).buildDesktopService();
             service.start(); // Build and Start a Winium Driver service
 //            Thread.sleep(5000);
-            driver = new WiniumDriver(service, options); // Start a winium driver
+            driver = new WiniumDriver(service, options); // Start a winium 
+
             Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
             int x = (int) ((dimension.getWidth() - getWidth()) / 2);
             int y = (int) ((dimension.getHeight() - getHeight()) / 2);
@@ -654,6 +656,14 @@ public class FrmMain extends javax.swing.JFrame {
                 marketWatchTable = FrmMain.driver.findElement(By.name("Market Watch"));
                 marketWatchElem = marketWatchTable.findElement(By.className("SysListView32"));
                 actions = new Actions(driver);
+
+                WebElement titleElem = FrmMain.driver.findElement(By.className("ThunderRT6MDIForm"));
+                title = "" + titleElem.getAttribute("Name");
+
+                title = title.replace("[", "- ");
+                title = title.replace("]", ")");
+                title = " (" + title;
+                title = title.substring(0, title.lastIndexOf(")") + 1);
 
                 try {
                     robot = new Robot();
