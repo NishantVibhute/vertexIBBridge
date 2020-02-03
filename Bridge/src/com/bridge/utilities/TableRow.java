@@ -7,13 +7,13 @@ package com.bridge.utilities;
 
 import com.bridge.beans.Settings;
 import com.bridge.forms.FrmMain;
+import static com.bridge.forms.FrmMain.tbSignal;
 import com.ib.client.Contract;
 import com.ib.controller.Formats;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import java.awt.event.KeyEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -44,7 +44,7 @@ public class TableRow {
     Contract m_contract = new Contract();
     Settings settings;
     WebElement element;
-    int elemSize = 0;
+//    int elemSize = 0;
     Thread t;
     double spread;
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
@@ -80,31 +80,37 @@ public class TableRow {
     }
 
     public void startContractData() {
-        ibData = new IBData(this);
-        String exch = settings.getExchange();
-        String compExch = exch.equals("SMART") || exch.equals("BEST") ? "NYMEX" : null;
-        m_contract.symbol(settings.getIBSymbol());
-        m_contract.secType(settings.getSetorType());
-        m_contract.lastTradeDateOrContractMonth(settings.getExpiryYear() + settings.getExpiryMonth());
-        m_contract.exchange(exch);
-        m_contract.primaryExch(compExch);
-        m_contract.currency(settings.getCurrency());
-        IBApi.INSTANCE.controller().reqTopMktData(m_contract, "", false, ibData);
-        element = FrmMain.marketWatchElem.findElements(By.name(vertexSymbol + " /" + settings.getExpiryMonth())).get(0);
-
-        setWindowHAndle();
-
-        obj = new VertexData(vertexSymbol + " /" + settings.getExpiryMonth(), element, this, true, this.settings, windowHandle);
-
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(TableRow.class.getName()).log(Level.SEVERE, null, ex);
+
+            element = FrmMain.marketWatchElem.findElements(By.name(vertexSymbol + " /" + settings.getExpiryMonth())).get(0);
+
+            ibData = new IBData(this);
+            String exch = settings.getExchange();
+            String compExch = exch.equals("SMART") || exch.equals("BEST") ? "NYMEX" : null;
+            m_contract.symbol(settings.getIBSymbol());
+            m_contract.secType(settings.getSetorType());
+            m_contract.lastTradeDateOrContractMonth(settings.getExpiryYear() + settings.getExpiryMonth());
+            m_contract.exchange(exch);
+            m_contract.primaryExch(compExch);
+            m_contract.currency(settings.getCurrency());
+            IBApi.INSTANCE.controller().reqTopMktData(m_contract, "", false, ibData);
+
+            setWindowHAndle();
+
+            obj = new VertexData(vertexSymbol + " /" + settings.getExpiryMonth(), element, this, true, this.settings, windowHandle);
+            FrmMain.startCalculation.StartC("" + FrmMain.tbSignal.getValueAt(rowNum, 1), rowNum);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(TableRow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            t = new Thread(obj);
+            t.start();
+            FrmMain.threadListMap.put(this.IBSymbol, this);
+        } catch (Exception e) {
+
+            CommonUtil.setMessage(vertexSymbol + " /" + settings.getExpiryMonth() + " Element not found");
         }
-        t = new Thread(obj);
-        t.start();
-        List<WebElement> elemin = FrmMain.tradeElem.findElements(By.className(""));
-        elemSize = elemin.size();
     }
 
     public void setWindowHAndle() {
@@ -114,22 +120,22 @@ public class TableRow {
     }
 
     public void stop() {
-        obj.stop(false);
-        t.interrupt();
-        ibQty = 0;
-        vertexQty = 0;
+        try {
+            obj.stop(false);
+            t.interrupt();
+            ibQty = 0;
+            vertexQty = 0;
 
-        Activate.showWindow(windowHandle);
-        FrmMain.robot.keyPress(KeyEvent.VK_ESCAPE);
-        FrmMain.robot.keyRelease(KeyEvent.VK_ESCAPE);
-        IBApi.INSTANCE.controller().cancelTopMktData(ibData);
+            Activate.showWindow(windowHandle);
+            FrmMain.robot.keyPress(KeyEvent.VK_ESCAPE);
+            FrmMain.robot.keyRelease(KeyEvent.VK_ESCAPE);
+            IBApi.INSTANCE.controller().cancelTopMktData(ibData);
 
-        FrmMain.model.setValueAt("", rowNum, 2);
-        FrmMain.model.setValueAt("", rowNum, 3);
-        FrmMain.model.setValueAt("", rowNum, 4);
-        FrmMain.model.setValueAt("", rowNum, 5);
-        FrmMain.model.setValueAt("", rowNum, 6);
-        FrmMain.model.setValueAt("", rowNum, 7);
+            FrmMain.stopCalculation.StopC("" + tbSignal.getValueAt(rowNum, 1), rowNum);
+
+        } catch (Exception e) {
+
+        }
     }
 
     public void updatePrice(double bid, double ask) {

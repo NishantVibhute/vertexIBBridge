@@ -11,6 +11,8 @@ import com.ib.controller.ApiController.IConnectionHandler;
 import com.ib.controller.ApiController.ITimeHandler;
 import com.ib.controller.Formats;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -128,6 +130,26 @@ public class IBApi implements IConnectionHandler {
     @Override
     public void message(int id, int errorCode, String errorMsg) {
         show(id + " " + errorCode + " " + errorMsg);
+        if (errorCode == 1100 || errorCode == 1101 | errorCode == 2110) {
+            Iterator<Map.Entry<String, TableRow>> iterator = FrmMain.threadListMap.entrySet().iterator();
+            // Iterate over the HashMap 
+            while (iterator.hasNext()) {
+                // Get the entry at this iteration 
+                Map.Entry<String, TableRow> entry = iterator.next();
+                entry.getValue().stop();
+                // Check if this key is the required key 
+                // Remove this entry from HashMap 
+                iterator.remove();
+            }
+
+            FrmMain.lblIBStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/redSignal.png")));
+            FrmMain.isIBConnected = false;
+            show("All Symbols processing has been stoppped");
+        } else if (errorCode == 1102) {
+            FrmMain.lblIBStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif")));
+            FrmMain.isIBConnected = true;
+        }
+
     }
 
     private class ConnectionPanel extends JPanel {

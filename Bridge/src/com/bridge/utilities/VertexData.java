@@ -47,7 +47,7 @@ public class VertexData implements Runnable {
     double vertexAsk;
     double buyPara;
     double sellPara;
-    static int ibQty, vertexQty;
+    int ibQty, vertexQty;
     Settings settings;
     double spread;
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
@@ -74,30 +74,40 @@ public class VertexData implements Runnable {
         System.out.println("running thread for" + this.symbol);
         while (isContinue) {
             try {
-                if (ibQty < settings.getIBMaxOrder() && vertexQty <= settings.getVertexMaxOrder()) {
+                if (ibQty <= settings.getIBMaxOrder() && vertexQty <= settings.getVertexMaxOrder()) {
 
                     double vertexBid = Double.parseDouble(elemin.get(2).getAttribute("Name"));
                     double vertexAsk = Double.parseDouble(elemin.get(3).getAttribute("Name"));
 
-                    double buySpread = tableRow.IBAsk - vertexBid;
-                    double sellSpread = tableRow.IBBid - vertexAsk;
+                    if (vertexBid != 0 && vertexAsk != 0 && tableRow.IBAsk != 0 && tableRow.IBBid != 0) {
+                        buySpread = tableRow.IBAsk - vertexBid;
+                        sellSpread = tableRow.IBBid - vertexAsk;
 
-                    if (buySpread <= settings.getBuySpread()) {
-                        transactionTypeV = BuySell.SELL.getName();
-                        transactionTypeI = BuySell.BUY.getName();
-                        spread = buySpread;
-                        performTransaction = true;
-                    } else if (sellSpread >= settings.getSellSpread()) {
-                        transactionTypeV = BuySell.BUY.getName();
-                        transactionTypeI = BuySell.SELL.getName();
-                        spread = sellSpread;
-                        performTransaction = true;
-                    }
-                    if (performTransaction) {
-                        placeVertexOrder();
-                        placeIBOrder();
-                        performTransaction = false;
-                        spread = 0.0;
+                        if (buySpread <= settings.getBuySpread()) {
+                            transactionTypeV = BuySell.SELL.getName();
+                            transactionTypeI = BuySell.BUY.getName();
+                            spread = buySpread;
+                            performTransaction = true;
+                        } else if (sellSpread >= settings.getSellSpread()) {
+                            transactionTypeV = BuySell.BUY.getName();
+                            transactionTypeI = BuySell.SELL.getName();
+                            spread = sellSpread;
+                            performTransaction = true;
+                        }
+                        if (performTransaction && spread != 0) {
+
+                            if (windowHandle == null) {
+                                tableRow.setWindowHAndle();
+                            } else {
+                                if (!FrmMain.isInProcess) {
+                                    FrmMain.isInProcess = true;
+                                    placeVertexOrder();
+                                    placeIBOrder();
+                                    performTransaction = false;
+                                    spread = 0.0;
+                                }
+                            }
+                        }
                     }
 
                     FrmMain.model.setValueAt(Formats.fmt(buySpread), tableRow.rowNum, 2);
@@ -216,17 +226,19 @@ public class VertexData implements Runnable {
         t1.setBroker("IB");
         updateOrderTable(t1);
         transactionTypeI = BuySell.NEUTRAL.getName();
+        ibQty++;
         price = 0;
 
         FrmMain.robot.keyPress(KeyEvent.VK_ESCAPE);
         FrmMain.robot.keyRelease(KeyEvent.VK_ESCAPE);
-
-        tableRow.setWindowHAndle();
-
+        FrmMain.isInProcess = false;
         if (ibQty >= settings.getIBMaxOrder() && vertexQty >= settings.getVertexMaxOrder()) {
             CommonUtil.setMessage("IB : " + tableRow.IBSymbol + " Total Qty : " + ibQty + "  , Vertex : " + tableRow.vertexSymbol + "Total Qty : " + vertexQty + " Max Order quantity reached");
-            tableRow.stop();
+
             FrmMain.model.setValueAt("Yellow", tableRow.rowNum, 0);
+            tableRow.stop();
+        } else {
+            tableRow.setWindowHAndle();
         }
         try {
             Thread.sleep(2000);

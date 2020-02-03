@@ -18,6 +18,7 @@ import com.bridge.utilities.IConnectionConfiguration;
 import com.bridge.utilities.OrdersModel;
 import com.bridge.utilities.StartCalculation;
 import com.bridge.utilities.StopCalculation;
+import com.bridge.utilities.TableRow;
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -34,6 +35,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,19 +68,21 @@ import org.openqa.selenium.winium.WiniumDriverService;
 public class FrmMain extends javax.swing.JFrame {
 
     public static DefaultTableModel model, modelOrder;
-    static JTable tbSignal, tbOrder;
-    StartCalculation startCalculation = new StartCalculation();
-    StopCalculation stopCalculation = new StopCalculation();
+    public static JTable tbSignal, tbOrder;
+    public static StartCalculation startCalculation = new StartCalculation();
+    public static StopCalculation stopCalculation = new StopCalculation();
     public static List<Settings> settingsList = new ArrayList<>();
     IBApi iBApi;
     public static boolean isIBConnected = false, isVertexConnected = false;
     public static WebDriver driver = null;
+    public static LinkedHashMap<String, TableRow> threadListMap = new LinkedHashMap<>();
 
     public static WebElement tradeTable, marketWatchTable;
     public static WebElement tradeElem, marketWatchElem;
     public static Robot robot;
     public static Actions actions;
     public static String title;
+    public static boolean isInProcess = false;
 
     /**
      * Creates new form FrmMain
@@ -256,8 +260,14 @@ public class FrmMain extends javax.swing.JFrame {
 
                                 } else {
 
-                                    startCalculation.StartC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
-                                    settingsList.get(selectedRow).getTableRow().startContractData();
+                                    WebElement titleElem = FrmMain.driver.findElement(By.className("ThunderRT6MDIForm"));
+                                    String titleWin = "" + titleElem.getAttribute("Name");
+
+                                    if ((titleWin.substring(0, titleWin.lastIndexOf("]") + 1)).trim().equals("[]")) {
+                                        JOptionPane.showMessageDialog(FrmMain.this, "Please Login Vertex ", "Information", JOptionPane.INFORMATION_MESSAGE);
+                                    } else {
+                                        settingsList.get(selectedRow).getTableRow().startContractData();
+                                    }
                                 }
                             }
                         }
@@ -265,7 +275,7 @@ public class FrmMain extends javax.swing.JFrame {
                         if (selectedCol == 11) {
                             if (!settingsList.get(selectedRow).getColor().equalsIgnoreCase("Red") || !settingsList.get(selectedRow).getColor().equalsIgnoreCase("Yellow")) {
                                 settingsList.get(selectedRow).getTableRow().stop();
-                                stopCalculation.StopC("" + tbSignal.getValueAt(selectedRow, 1), selectedRow);
+
                             }
                         }
                         if (selectedCol == 12) {
@@ -633,63 +643,58 @@ public class FrmMain extends javax.swing.JFrame {
         // TODO add your handling code here:
 //        lblStatusMessage.setText("Connecting Vertex. Please Wait ...!!!");
 
-        final DigMessage loading = new DigMessage(this, true);
+        WebElement titleElem = FrmMain.driver.findElement(By.className("ThunderRT6MDIForm"));
+        title = "" + titleElem.getAttribute("Name");
 
-//        final JDialog loading = new JDialog(this);
-//        loading.setSize(200, 50);
-//        JPanel p1 = new JPanel(new BorderLayout());
-//        p1.setSize(200, 50);
-//        p1.add(new JLabel("Please wait..."), BorderLayout.CENTER);
-//
-//        loading.setUndecorated(true);
-//        loading.getContentPane().add(p1);
-//        loading.pack();
-//        loading.setLocationRelativeTo(this);
-//        loading.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-//        loading.setModal(true);
-        SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
-            @Override
-            protected String doInBackground() throws InterruptedException {
-                tradeTable = FrmMain.driver.findElement(By.name("Trade"));
-                tradeElem = tradeTable.findElement(By.className("SysListView32"));
+        if ((title.substring(0, title.lastIndexOf("]") + 1)).trim().equals("[]")) {
+            JOptionPane.showMessageDialog(FrmMain.this, "Please Login Vertex ", "Information", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            final DigMessage loading = new DigMessage(this, true);
 
-                marketWatchTable = FrmMain.driver.findElement(By.name("Market Watch"));
-                marketWatchElem = marketWatchTable.findElement(By.className("SysListView32"));
-                actions = new Actions(driver);
+            SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+                @Override
+                protected String doInBackground() throws InterruptedException {
+                    tradeTable = FrmMain.driver.findElement(By.name("Trade"));
+                    tradeElem = tradeTable.findElement(By.className("SysListView32"));
 
-                WebElement titleElem = FrmMain.driver.findElement(By.className("ThunderRT6MDIForm"));
-                title = "" + titleElem.getAttribute("Name");
+                    marketWatchTable = FrmMain.driver.findElement(By.name("Market Watch"));
+                    marketWatchElem = marketWatchTable.findElement(By.className("SysListView32"));
+                    actions = new Actions(driver);
 
-                title = title.replace("[", "- ");
-                title = title.replace("]", ")");
-                title = " (" + title;
-                title = title.substring(0, title.lastIndexOf(")") + 1);
+                    WebElement titleElem = FrmMain.driver.findElement(By.className("ThunderRT6MDIForm"));
+                    title = "" + titleElem.getAttribute("Name");
 
-                try {
-                    robot = new Robot();
-                } catch (AWTException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                isVertexConnected = true;
-                lblVertexStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif")));
-                lblVertexStatus.revalidate();
-                lblVertexStatus.repaint();
+                    title = title.replace("[", "- ");
+                    title = title.replace("]", ")");
+                    title = " (" + title;
+                    title = title.substring(0, title.lastIndexOf(")") + 1);
+
+                    try {
+                        robot = new Robot();
+                    } catch (AWTException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    isVertexConnected = true;
+                    lblVertexStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/greensignal.gif")));
+                    lblVertexStatus.revalidate();
+                    lblVertexStatus.repaint();
 //        lblStatusMessage.setText("");
-                return "Success";
-            }
+                    return "Success";
+                }
 
-            @Override
-            protected void done() {
-                loading.dispose();
+                @Override
+                protected void done() {
+                    loading.dispose();
+                }
+            };
+            worker.execute();
+            loading.setVisible(true);
+            try {
+                worker.get();
+            } catch (Exception e1) {
+                e1.printStackTrace();
             }
-        };
-        worker.execute();
-        loading.setVisible(true);
-        try {
-            worker.get();
-        } catch (Exception e1) {
-            e1.printStackTrace();
         }
 
     }//GEN-LAST:event_lblVertexStatusMouseClicked
