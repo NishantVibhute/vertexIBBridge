@@ -83,73 +83,93 @@ public class FrmMain extends javax.swing.JFrame {
     public static Actions actions;
     public static String title;
     public static boolean isInProcess = false;
+    CommonUtil common = new CommonUtil();
 
     /**
      * Creates new form FrmMain
      */
     public FrmMain() {
-        try {
-            initComponents();
-            String applicationPath = "C:\\Users\\Supriya\\AppData\\Local\\Programs\\Seven Ocean Trade\\VertexFX Trader.exe";
-            String winiumDriverPath = "dependencies/Winium.Desktop.Driver.exe";// To stop winium desktop driver
-//            before start another session
-            Process process = Runtime.getRuntime().exec("taskkill /F /IM Winium.Desktop.Driver.exe");
-            process.waitFor();
-            process.destroy();
-            DesktopOptions options = new DesktopOptions(); // Initiate Winium Desktop Options
-            options.setApplicationPath(applicationPath); // Set notepad application path
-            WiniumDriverService service = new WiniumDriverService.Builder().usingDriverExecutable(new File(winiumDriverPath)).usingPort(9999).withVerbose(true).withLogFile(new File("winiLog.txt")).withSilent(false).buildDesktopService();
-            service.start(); // Build and Start a Winium Driver service
-//            Thread.sleep(5000);
-            driver = new WiniumDriver(service, options); // Start a winium 
 
-            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-            int x = (int) ((dimension.getWidth() - getWidth()) / 2);
-            int y = (int) ((dimension.getHeight() - getHeight()) / 2);
-            java.net.URL url = ClassLoader.getSystemResource("com/bridge/images/logo.png");
-            Toolkit kit = Toolkit.getDefaultToolkit();
-            Image img = kit.createImage(url);
-            setIconImage(img);
-            setVisible(true);
-            setLocation(x, y);
-            setSignalTable();
-            setOrderTable();
+        initComponents();
 
-            lblIBStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/refresh.png")));
+        boolean continueProcess = false;
+        String appPathstatus = CommonUtil.checkAppPathExist();
+        if ("".equals(appPathstatus)) {
+            String text = JOptionPane.showInputDialog(FrmMain.this, "Please Enter VertexFX Path", "");
+            if (text != null && !text.equals("")) {
+                CommonUtil.writeAppPathToFile(text);
+                appPathstatus = CommonUtil.checkAppPathExist();
+                continueProcess = true;
+            } else {
+                System.exit(0);
+            }
+        } else {
+            continueProcess = true;
+        }
+
+        if (continueProcess) {
             try {
-                txtMessages.setText(CommonUtil.readFile());
-                CommonUtil.readOrderFile();
-            } catch (IOException ex) {
+                String applicationPath = appPathstatus;
+                String winiumDriverPath = CommonUtil.path + "Winium.Desktop.Driver.exe";// To stop winium desktop driver
+//            before start another session
+                Process process = Runtime.getRuntime().exec("taskkill /F /IM Winium.Desktop.Driver.exe");
+                process.waitFor();
+                process.destroy();
+                DesktopOptions options = new DesktopOptions(); // Initiate Winium Desktop Options
+                options.setApplicationPath(applicationPath); // Set notepad application path
+                WiniumDriverService service = new WiniumDriverService.Builder().usingDriverExecutable(new File(winiumDriverPath)).usingPort(9999).withVerbose(true).withLogFile(new File("winiLog.txt")).withSilent(false).buildDesktopService();
+                service.start(); // Build and Start a Winium Driver service
+//            Thread.sleep(5000);
+                driver = new WiniumDriver(service, options); // Start a winium 
+
+                Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+                int x = (int) ((dimension.getWidth() - getWidth()) / 2);
+                int y = (int) ((dimension.getHeight() - getHeight()) / 2);
+                java.net.URL url = ClassLoader.getSystemResource("com/bridge/images/logo.png");
+                Toolkit kit = Toolkit.getDefaultToolkit();
+                Image img = kit.createImage(url);
+                setIconImage(img);
+                setVisible(true);
+                setLocation(x, y);
+                setSignalTable();
+                setOrderTable();
+
+                lblIBStatus.setIcon(new ImageIcon(getClass().getResource("/com/bridge/images/refresh.png")));
+                try {
+                    txtMessages.setText(CommonUtil.readFile());
+                    CommonUtil.readOrderFile();
+                } catch (IOException ex) {
+                    Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                CommonUtil.setMessage("Application Started");
+
+                int status = CommonUtil.checkSettingsExist();
+                if (status != 0) {
+                    settingsList = CommonUtil.getSettings();
+
+                    for (Settings set : settingsList) {
+
+                        model.addRow(set.getTableRow().getInitalRow());
+                    }
+
+                }
+                this.addWindowListener(new WindowAdapter() {
+                    public void windowClosing(WindowEvent e) {
+                        try {
+                            CommonUtil.setMessage("Application Terminated");
+                            CommonUtil.writeFile(txtMessages);
+
+                            CommonUtil.writeOrderToFile();
+                            System.exit(0);
+
+                        } catch (IOException ex) {
+                            Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                });
+            } catch (Exception ex) {
                 Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
             }
-            CommonUtil.setMessage("Application Started");
-
-            int status = CommonUtil.checkSettingsExist();
-            if (status != 0) {
-                settingsList = CommonUtil.getSettings();
-
-                for (Settings set : settingsList) {
-
-                    model.addRow(set.getTableRow().getInitalRow());
-                }
-
-            }
-            this.addWindowListener(new WindowAdapter() {
-                public void windowClosing(WindowEvent e) {
-                    try {
-                        CommonUtil.setMessage("Application Terminated");
-                        CommonUtil.writeFile(txtMessages);
-
-                        CommonUtil.writeOrderToFile();
-                        System.exit(0);
-
-                    } catch (IOException ex) {
-                        Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            });
-        } catch (Exception ex) {
-            Logger.getLogger(FrmMain.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
@@ -250,7 +270,7 @@ public class FrmMain extends javax.swing.JFrame {
                                     if (!isIBConnected) {
                                         String text = JOptionPane.showInputDialog(FrmMain.this, "Interactive Broker is Not Connected \nEnter Port to connect", "7496");
 
-                                        if (text != null) {
+                                        if (text != null && !text.equals("")) {
                                             int port = Integer.parseInt(text);
                                             connectIB(port);
                                         }

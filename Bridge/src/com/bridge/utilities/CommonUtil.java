@@ -16,10 +16,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextArea;
@@ -29,6 +31,38 @@ import javax.swing.JTextArea;
  * @author nishant.vibhute
  */
 public class CommonUtil {
+
+    public static String path;
+
+    static InputStream input = null;
+    static Properties prop = new Properties();
+
+    public CommonUtil() {
+
+        try {
+
+//            InputStream input = CommonUtil.class.getClassLoader().getResourceAsStream("resource.properties");
+            input = getClass().getResourceAsStream("/com/bridge/properties/resource.properties");
+//            input = new FileInputStream(propertyUrl + "\\src\\com\\vollyball\\properties\\resource.properties");
+            prop.load(input);
+
+            String osArch = System.getenv("PROCESSOR_ARCHITECTURE");
+            if (osArch.endsWith("64")) {
+                path = CommonUtil.getResourceProperty("pfx64Path") + File.separator + CommonUtil.getResourceProperty("folder.name") + File.separator;
+            } else {
+                path = CommonUtil.getResourceProperty("pfx32Path") + File.separator + CommonUtil.getResourceProperty("folder.name") + File.separator;
+            }
+
+        } catch (Exception ex) {
+
+        }
+    }
+
+    public static String getResourceProperty(String name) {
+        String value = prop.getProperty(name);
+        return value;
+
+    }
 
     public static void setMessage(String message) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -41,7 +75,7 @@ public class CommonUtil {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDateTime now = LocalDateTime.now();
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter("Logs_" + dtf.format(now) + ".txt"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path + "Logs_" + dtf.format(now) + ".txt"));
         text.write(writer);
 
     }
@@ -51,7 +85,7 @@ public class CommonUtil {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDateTime now = LocalDateTime.now();
 
-        File temp = new File("Transaction_" + dtf.format(now) + ".csv");
+        File temp = new File(path + "Transaction_" + dtf.format(now) + ".csv");
 
         try {
             // create FileWriter object with file as parameter
@@ -91,7 +125,7 @@ public class CommonUtil {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDateTime now = LocalDateTime.now();
 
-        File temp = new File("Transaction_" + dtf.format(now) + ".csv");
+        File temp = new File(path + "Transaction_" + dtf.format(now) + ".csv");
         boolean exists = temp.exists();
 
         if (exists) {
@@ -126,12 +160,12 @@ public class CommonUtil {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDateTime now = LocalDateTime.now();
 
-        File temp = new File("Logs_" + dtf.format(now) + ".txt");
+        File temp = new File(path + "Logs_" + dtf.format(now) + ".txt");
         boolean exists = temp.exists();
 
         if (exists) {
 
-            try (BufferedReader br = new BufferedReader(new FileReader("Logs_" + dtf.format(now) + ".txt"))) {
+            try (BufferedReader br = new BufferedReader(new FileReader(temp))) {
                 String line;
                 while ((line = br.readLine()) != null) {
                     text = text + line + "\n";
@@ -141,9 +175,45 @@ public class CommonUtil {
         return text;
     }
 
+    public static String checkAppPathExist() {
+        String text = "";
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDateTime now = LocalDateTime.now();
+
+        File temp = new File(path + "apppath.txt");
+        boolean exists = temp.exists();
+
+        if (exists) {
+
+            try (BufferedReader br = new BufferedReader(new FileReader(temp))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    text = text + line;
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(CommonUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return text;
+    }
+
+    public static void writeAppPathToFile(String text) {
+        try {
+            File temp = new File(path + "apppath.txt");
+
+            FileWriter writer = new FileWriter(temp);
+            writer.write(text);
+            writer.flush();
+            writer.close();
+
+        } catch (Exception ex) {
+            Logger.getLogger(CommonUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public static int checkSettingsExist() {
         int status = 1;
-        File temp = new File("settings.csv");
+        File temp = new File(path + "settings.csv");
         boolean exists = temp.exists();
 
         if (!exists) {
@@ -154,7 +224,7 @@ public class CommonUtil {
 
     public static int insertSettings(List<Settings> settingsList) {
         int status = 1;
-        File temp = new File("settings.csv");
+        File temp = new File(path + "settings.csv");
 
         try {
             // create FileWriter object with file as parameter
@@ -188,7 +258,7 @@ public class CommonUtil {
         try {
             // Create an object of file reader
             // class with CSV file as a parameter.
-            FileReader filereader = new FileReader("settings.csv");
+            FileReader filereader = new FileReader(path + "settings.csv");
 
             // create csvReader object and skip first Line
             CSVReader csvReader = new CSVReaderBuilder(filereader)

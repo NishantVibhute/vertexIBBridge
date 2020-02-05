@@ -43,8 +43,6 @@ public class VertexData implements Runnable {
     double buySpread;
     double sellSpread;
 
-    double vertexBid;
-    double vertexAsk;
     double buyPara;
     double sellPara;
     int ibQty, vertexQty;
@@ -178,7 +176,7 @@ public class VertexData implements Runnable {
 
             @Override
             public void handle(int errorCode, final String errorMsg) {
-                m_order.orderId(0);
+//                m_order.orderId(0);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

@@ -38,6 +38,7 @@ public class Activate {
 
     public static void showWindow(HWND hWnd) {
         User32 user32 = User32.instance;
+
         user32.ShowWindow(hWnd, User32.SW_SHOW);
         user32.SetForegroundWindow(hWnd);
     }
